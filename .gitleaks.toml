@@ -1,0 +1,58 @@
+# gitleaks: reglas por defecto + reglas extra (URIs con credenciales y passwords literales)
+# Uso: gitleaks git . -c .gitleaks.toml --redact     |     gitleaks dir . -c .gitleaks.toml --redact
+title = "gitleaks default + reglas extra"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "uri-con-credenciales"
+description = "URI de BD/broker con usuario:password embebidos"
+regex = '''(?i)\b(?:mongodb(?:\+srv)?|postgres(?:ql)?|mysql|mariadb|redis|rediss|amqps?|mssql|sqlserver)://[^\s:/@'"]+:([^\s@/'"]{3,})@'''
+secretGroup = 1
+keywords = ["mongodb", "postgres", "mysql", "mariadb", "redis", "amqp", "mssql", "sqlserver"]
+[[rules.allowlists]]
+regexTarget = "secret"
+regexes = ['''(?i)^(password|pass|pwd|changeme|cambiar\w*|removed\w*|removido\w*|xxx+|\*+|<[^>]+>|\$\{[^}]+\})$''']
+
+[[rules]]
+id = "jdbc-password-param"
+description = "JDBC URL con password en parámetros"
+regex = '''(?i)jdbc:[a-z0-9]+:[^\s'"]*[?&;]password=([^&;\s'"]{3,})'''
+secretGroup = 1
+keywords = ["jdbc"]
+
+[[rules]]
+id = "password-literal-en-config"
+description = "password/secret literal en .properties/.yml/.env (no ${...})"
+regex = '''(?im)^[ \t]*[a-z0-9_.-]*(?:password|passwd|secret)[a-z0-9_.-]*[ \t]*[=:][ \t]*["']?([^\s"'<>${}#]{4,})'''
+secretGroup = 1
+path = '''(?i)(\.(properties|ya?ml|env|conf|ini|cfg|toml)|\.env(\.[a-z]+)?)$'''
+keywords = ["password", "passwd", "secret"]
+[[rules.allowlists]]
+regexTarget = "secret"
+regexes = ['''(?i)^(changeme|cambiar\w*|example|ejemplo|your_?\w*|tu_?\w*|removed\w*|removido\w*|\*+|x{3,}|none|null|true|false|required|requerido)$''']
+
+[[rules]]
+id = "password-atributo-xml"
+description = "Atributo password con valor en XML (glassfish/persistence)"
+regex = '''(?i)name="[^"]*password[^"]*"\s+value="([^"$]{3,})"'''
+secretGroup = 1
+path = '''(?i)\.(xml|bak)$'''
+keywords = ["password"]
+
+# Falsos positivos conocidos
+[[allowlists]]
+description = "JWT falso a propósito en tests (firma inválida)"
+regexTarget = "match"
+regexes = ['''eyJ[\w-]+\.eyJ[\w-]+\.firma_invalida''']
+
+# .env.example deja los secretos vacíos ("CLAVE="); la regla genérica toma la línea siguiente
+# como valor. Solo se ignora ese caso exacto (= seguido de salto de línea) y solo en .env.example.
+[[allowlists]]
+description = "Variables vacías en .env.example"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+regexes = ['''=[ \t]*\r?\n''']
+paths = ['''(^|[\/])\.env\.example$''']
