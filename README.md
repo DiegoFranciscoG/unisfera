@@ -25,6 +25,8 @@ La demo pública se habilita al desplegar (ver [Despliegue](#despliegue)). En lo
 
 ## Capturas
 
+![Recorrido: ingreso, órbita del estudiante, malla en anillos y matrícula en tres pasos](docs/img/recorrido.gif)
+
 | Ingreso con cédula en azulejos | Malla en órbitas | Matrícula en tres pasos |
 |---|---|---|
 | ![Ingreso con validación de cédula en vivo](docs/img/ingreso.png) | ![Malla curricular en anillos por nivel](docs/img/malla.png) | ![Asistente de matrícula con costo en vivo](docs/img/matricula.png) |
@@ -33,13 +35,17 @@ La demo pública se habilita al desplegar (ver [Despliegue](#despliegue)). En lo
 |---|---|---|
 | ![Planilla de notas del docente](docs/img/docente-planilla.png) | ![Tablero con indicadores y gráficos](docs/img/tablero.png) | ![Parámetros con línea de tiempo](docs/img/parametros.png) |
 
+| «Mi órbita» del estudiante | Notas con simulador | Estado de cuenta y pago en línea | Semana de la matrícula |
+|---|---|---|---|
+| ![Inicio del estudiante](docs/img/inicio-estudiante.png) | ![Notas del período](docs/img/notas.png) | ![Estado de cuenta](docs/img/cuenta.png) | ![Horario semanal en la matrícula](docs/img/matricula-semana.png) |
+
 La misma aplicación se adapta a teléfonos, tabletas y escritorio, en modo claro u oscuro:
 
 | Inicio en teléfono | Notas en teléfono | Menú en teléfono | Malla en modo oscuro |
 |---|---|---|---|
 | ![Inicio del estudiante en teléfono](docs/img/movil-inicio.png) | ![Notas en teléfono](docs/img/movil-notas.png) | ![Menú lateral en teléfono](docs/img/movil-menu.png) | ![Malla en modo oscuro](docs/img/malla-oscuro.png) |
 
-Las capturas se regeneran con `frontend/scripts/capturas.mjs` sobre el sistema en marcha.
+Las capturas y el GIF se regeneran sobre el sistema en marcha con `frontend/scripts/capturas.mjs`, `recorrido-gif.mjs` y `armar-gif.py`. Las cédulas nunca aparecen completas.
 
 ## Problema que resuelve
 
@@ -208,6 +214,7 @@ El backend lee las variables de entorno de la tabla siguiente; el frontend (puer
 | `PUBLIC_BASE_URL`, `API_BASE_URL` | No | URL pública del frontend y URL interna del backend |
 | `MAIL_HOST`, `MAIL_PORT`, `MAIL_FROM` | No | Correo saliente |
 | `COOKIE_SECURE` | No | `true` en producción (HTTPS) |
+| `PAYMENT_SIMULATOR_ENABLED` | No | Pasarela simulada para demostraciones (`false` por defecto; en producción se integra una pasarela real) |
 
 Sin una variable obligatoria la aplicación **no arranca**: no existen valores por defecto para secretos. Plantilla: [.env.example](.env.example).
 
@@ -282,7 +289,7 @@ Plan 100 % gratuito (límites verificados en 2026):
 | Valkey | Render Key Value free | Solo límites y sesiones: no guarda datos de negocio |
 | Frontend | Vercel o Netlify | Reescritura de `/api/*` al backend |
 
-En producción: `COOKIE_SECURE=true`, `SEED_LOAD_TEST_STUDENTS=0`, `CORS_ALLOWED_ORIGINS` con el dominio real y secretos en el gestor del proveedor.
+En producción: `COOKIE_SECURE=true`, `PAYMENT_SIMULATOR_ENABLED=false` salvo en la demo pública, `SEED_LOAD_TEST_STUDENTS=0`, `CORS_ALLOWED_ORIGINS` con el dominio real y secretos en el gestor del proveedor.
 
 ## Seguridad aplicada
 
