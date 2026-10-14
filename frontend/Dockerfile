@@ -9,8 +9,10 @@ COPY . .
 RUN npx ng build --configuration production
 
 FROM nginxinc/nginx-unprivileged:1.31.2-alpine
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/dist/frontend/browser /usr/share/nginx/html
+COPY --chown=101:101 nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build --chown=101:101 /app/dist/frontend/browser /usr/share/nginx/html
+# Usuario sin privilegios de la imagen (uid 101), declarado explícitamente.
+USER 101
 EXPOSE 8080
 HEALTHCHECK --interval=15s --timeout=3s --start-period=10s --retries=5 \
     CMD wget -qO- http://127.0.0.1:8080/healthz || exit 1
