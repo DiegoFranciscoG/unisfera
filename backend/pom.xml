@@ -19,6 +19,11 @@
     <properties>
         <java.version>25</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Parches de seguridad sobre lo gestionado por Spring Boot 4.1.1 (Trivy, 2026-10-14):
+             Tomcat CVE-2026-65182/65905/68525 y Jackson CVE-2026-68497/89407/89425/91776/91777. -->
+        <tomcat.version>11.0.27</tomcat.version>
+        <jackson-bom.version>3.1.7</jackson-bom.version>
+        <jackson-2-bom.version>2.21.7</jackson-2-bom.version>
         <bouncycastle.version>1.86</bouncycastle.version>
         <jjwt.version>0.13.0</jjwt.version>
         <mapstruct.version>1.6.3</mapstruct.version>
