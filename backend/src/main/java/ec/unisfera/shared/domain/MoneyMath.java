@@ -7,7 +7,7 @@ import java.util.Currency;
 /** Dinero siempre en BigDecimal, con los decimales que define la moneda (USD → 2). */
 public final class MoneyMath {
 
-    private static final BigDecimal HUNDRED = BigDecimal.valueOf(100);
+    private static final BigDecimal HUNDRED = BigDecimal.valueOf(100); // técnico: base de los porcentajes
 
     private MoneyMath() {
     }

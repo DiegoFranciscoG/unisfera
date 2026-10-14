@@ -93,7 +93,7 @@ public class FinanceController {
     @RequiresPermission("SELF_SERVICE")
     @GetMapping("/api/me/payments")
     public List<PaymentService.PaymentView> myPayments() {
-        return payments.forStudent(guard.currentStudentId(), 30);
+        return payments.forStudent(guard.currentStudentId(), ec.unisfera.shared.domain.TechnicalLimits.RECENT_PAYMENTS_SELF);
     }
 
     @Operation(summary = "Iniciar un pago en línea (cabecera Idempotency-Key obligatoria)")
@@ -154,7 +154,7 @@ public class FinanceController {
     @RequiresPermission("FINANCE_READ")
     @GetMapping("/api/admin/finance/students/{studentId}/payments")
     public List<PaymentService.PaymentView> studentPayments(@PathVariable UUID studentId) {
-        return payments.forStudent(studentId, 50);
+        return payments.forStudent(studentId, ec.unisfera.shared.domain.TechnicalLimits.RECENT_PAYMENTS_ADMIN);
     }
 
     @RequiresPermission("PAYMENT_MANAGE")

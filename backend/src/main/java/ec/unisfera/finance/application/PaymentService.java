@@ -100,7 +100,7 @@ public class PaymentService {
             n = gateway.verifyAndParse(body, signature);
         } catch (PaymentGateway.InvalidSignatureException e) {
             jdbc.sql("insert into gateway_transaction (id, gateway, operation, request_payload, signature_valid, outcome) values (:id, :g, 'NOTIFICATION', :b, false, 'INVALID_SIGNATURE')")
-                    .param("id", UuidV7.next(clock)).param("g", gateway.name()).param("b", body.length() > 2000 ? body.substring(0, 2000) : body).update();
+                    .param("id", UuidV7.next(clock)).param("g", gateway.name()).param("b", ec.unisfera.shared.domain.TechnicalLimits.truncate(body, ec.unisfera.shared.domain.TechnicalLimits.RAW_PAYLOAD)).update();
             throw e;
         }
         int attempts = jdbc.sql("""
@@ -214,7 +214,7 @@ public class PaymentService {
                         insert into account_entry (id, student_id, entry_type, direction, amount, payment_id, reverses_entry_id, description)
                         select :id, student_id, 'REVERSAL', 1, amount, payment_id, id, 'Anulación de pago: ' || :r
                         from account_entry where payment_id = :p and entry_type = 'PAYMENT'""")
-                .param("id", UuidV7.next(clock)).param("r", reason.length() > 150 ? reason.substring(0, 150) : reason).param("p", paymentId).update();
+                .param("id", UuidV7.next(clock)).param("r", ec.unisfera.shared.domain.TechnicalLimits.truncate(reason, ec.unisfera.shared.domain.TechnicalLimits.REASON_SNIPPET)).param("p", paymentId).update();
     }
 
     /** Pagos que la pasarela no notificó (escenario DELAY): se resuelven por consulta activa. */

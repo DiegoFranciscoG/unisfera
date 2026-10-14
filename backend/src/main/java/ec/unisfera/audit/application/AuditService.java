@@ -47,7 +47,38 @@ public class AuditService {
                 .param("actor", RequestContext.actorId().orElse(null))
                 .param("ip", RequestContext.ip())
                 .param("request", RequestContext.requestId())
-                .param("detail", detail == null ? null : detail.substring(0, Math.min(detail.length(), 500)))
+                .param("detail", ec.unisfera.shared.domain.TechnicalLimits.truncate(detail, ec.unisfera.shared.domain.TechnicalLimits.AUDIT_DETAIL))
                 .update();
+    }
+
+    public record AuditEntry(java.util.UUID id, java.time.Instant occurredAt, String tableName, String recordId, String action, String oldValues,
+                             String newValues, java.util.UUID actorId, String actorName, String actorIp, String requestId, String detail) {
+    }
+
+    @Transactional(readOnly = true)
+    public ec.unisfera.shared.web.PageResponse<AuditEntry> search(String table, String recordId, String action, java.util.UUID actor,
+                                                                  ec.unisfera.shared.web.PageQuery q) {
+        String where = """
+                where (cast(:table as text) is null or a.table_name = :table)
+                  and (cast(:record as text) is null or a.record_id = :record)
+                  and (cast(:action as text) is null or a.action = :action)
+                  and (cast(:actor as uuid) is null or a.actor_id = :actor)""";
+        var items = jdbc.sql("""
+                        select a.id, a.occurred_at, a.table_name, a.record_id, a.action, a.old_values::text old_values,
+                               a.new_values::text new_values, a.actor_id, p.first_names || ' ' || p.last_names actor_name,
+                               a.actor_ip, a.request_id, a.detail
+                        from audit_log a left join user_account u on u.id = a.actor_id left join person p on p.id = u.person_id
+                        """ + where + " order by a.occurred_at desc limit :l offset :o")
+                .param("table", table).param("record", recordId).param("action", action).param("actor", actor)
+                .param("l", q.size()).param("o", q.offset())
+                .query((rs, n) -> new AuditEntry(rs.getObject("id", java.util.UUID.class), rs.getTimestamp("occurred_at").toInstant(),
+                        rs.getString("table_name"), rs.getString("record_id"), rs.getString("action"), rs.getString("old_values"),
+                        rs.getString("new_values"), rs.getObject("actor_id", java.util.UUID.class), rs.getString("actor_name"),
+                        rs.getString("actor_ip"), rs.getString("request_id"), rs.getString("detail")))
+                .list();
+        long total = jdbc.sql("select count(*) from audit_log a " + where)
+                .param("table", table).param("record", recordId).param("action", action).param("actor", actor)
+                .query(Long.class).single();
+        return ec.unisfera.shared.web.PageResponse.of(items, q, total);
     }
 }

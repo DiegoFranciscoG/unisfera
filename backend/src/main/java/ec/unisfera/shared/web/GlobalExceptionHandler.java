@@ -133,6 +133,16 @@ public class GlobalExceptionHandler {
         return problem(HttpStatus.METHOD_NOT_ALLOWED, "METHOD_NOT_ALLOWED", "Método no permitido", request);
     }
 
+    @ExceptionHandler(org.springframework.web.HttpMediaTypeNotSupportedException.class)
+    ProblemDetail mediaType(Exception ex, HttpServletRequest request) {
+        return problem(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "MEDIA_TYPE", "Tipo de contenido no soportado", request);
+    }
+
+    @ExceptionHandler(org.springframework.web.multipart.MultipartException.class)
+    ProblemDetail multipart(Exception ex, HttpServletRequest request) {
+        return problem(HttpStatus.BAD_REQUEST, "VALIDATION", "El archivo adjunto no es válido", request);
+    }
+
     @ExceptionHandler(NoResourceFoundException.class)
     ProblemDetail noResource(NoResourceFoundException ex, HttpServletRequest request) {
         return problem(HttpStatus.NOT_FOUND, "NOT_FOUND", "Recurso inexistente", request);

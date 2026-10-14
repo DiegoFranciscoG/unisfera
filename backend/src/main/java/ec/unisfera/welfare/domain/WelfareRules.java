@@ -10,7 +10,7 @@ import java.util.UUID;
 /** Reglas puras de bienestar: puntaje de postulación (RN-20), mantenimiento de beca (RN-22) y riesgo de deserción. */
 public final class WelfareRules {
 
-    private static final BigDecimal HUNDRED = BigDecimal.valueOf(100);
+    private static final BigDecimal HUNDRED = ec.unisfera.shared.domain.MoneyMath.hundred();
     private static final int SCALE = 2;
 
     public record Criterion(UUID id, BigDecimal maxScore, BigDecimal weight) {

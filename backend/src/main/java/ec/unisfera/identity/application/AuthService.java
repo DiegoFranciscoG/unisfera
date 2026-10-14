@@ -364,7 +364,7 @@ public class AuthService {
         jdbc.sql("""
                         insert into login_attempt (id, username_attempted, user_id, ip, user_agent, success, reason)
                         values (:id, :u, :uid, :ip, :ua, :ok, :r)""")
-                .param("id", UuidV7.next(clock)).param("u", username.length() > 40 ? username.substring(0, 40) : username)
+                .param("id", UuidV7.next(clock)).param("u", ec.unisfera.shared.domain.TechnicalLimits.truncate(username, ec.unisfera.shared.domain.TechnicalLimits.USERNAME))
                 .param("uid", userId).param("ip", RequestContext.ip()).param("ua", RequestContext.userAgent())
                 .param("ok", success).param("r", reason).update();
     }

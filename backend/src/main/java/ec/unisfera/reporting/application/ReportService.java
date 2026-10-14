@@ -4,6 +4,7 @@ import ec.unisfera.parameters.application.ParameterKeys;
 import ec.unisfera.parameters.application.ParameterService;
 import ec.unisfera.reporting.domain.ReportTable;
 import ec.unisfera.shared.domain.NotFoundException;
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.time.LocalDate;
@@ -16,7 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Reportes institucionales con filtros y fecha de corte. Ninguno toca welfare_attention
+ * Reportes institucionales con filtros y fecha de corte. Ninguno consulta las atenciones de bienestar
  * (verificado por un test de arquitectura) y los agregados de becas suprimen celdas pequeñas (RN-23).
  */
 @Service
@@ -128,8 +129,9 @@ public class ReportService {
         long holders = jdbc.sql("select count(distinct student_id) from scholarship_award where status = 'ACTIVE'").query(Long.class).single();
         List<String> notes = new ArrayList<>(table.notes());
         if (regular > 0) {
-            double pct = 100.0 * holders / regular;
-            notes.add(String.format("Becarios: %.1f %% de los estudiantes matriculados (mínimo LOES art. 77: %s %%)", pct,
+            BigDecimal pct = BigDecimal.valueOf(holders).multiply(ec.unisfera.shared.domain.MoneyMath.hundred())
+                    .divide(BigDecimal.valueOf(regular), 1, java.math.RoundingMode.HALF_UP);
+            notes.add(String.format("Becarios: %s %% de los estudiantes matriculados (mínimo LOES art. 77: %s %%)", pct.toPlainString(),
                     parameters.decimal(ParameterKeys.MIN_SCHOLARSHIP_COVERAGE).stripTrailingZeros().toPlainString()));
         }
         return new ReportTable(table.code(), table.title(), table.cutoff(), table.headers(), table.rows(), notes);

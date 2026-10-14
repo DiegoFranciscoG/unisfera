@@ -143,7 +143,7 @@ public class BillingService implements EnrollmentQuotePort {
                         values (:id, :s, :p, :t, :d, :a, :c, :i, :desc)""")
                 .param("id", UuidV7.next(clock)).param("s", studentId).param("p", periodId).param("t", type).param("d", direction)
                 .param("a", amount).param("c", chargeId).param("i", installmentId)
-                .param("desc", description.length() > 200 ? description.substring(0, 200) : description).update();
+                .param("desc", ec.unisfera.shared.domain.TechnicalLimits.truncate(description, ec.unisfera.shared.domain.TechnicalLimits.DESCRIPTION)).update();
     }
 
     private ChargeCalculator.Input input(UUID studentId, UUID periodId, String type, List<UUID> subjectIds) {

@@ -24,7 +24,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(RateLimitFilter.class);
     private static final Duration WINDOW = Duration.ofMinutes(1);
-    private static final Duration KEY_TTL = WINDOW.plusSeconds(10);
+    private static final Duration KEY_TTL = WINDOW.plusSeconds(10); // técnico: margen para que Redis expire la ventana
 
     private final StringRedisTemplate redis;
     private final ParameterService parameters;
@@ -54,7 +54,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         }
         if (bucket != null && exceeded(bucket, limit)) {
             response.setHeader("Retry-After", String.valueOf(WINDOW.toSeconds()));
-            SecurityConfig.writeProblem(response, 429, "RATE_LIMIT", "Demasiadas solicitudes; espere un momento");
+            SecurityConfig.writeProblem(response, org.springframework.http.HttpStatus.TOO_MANY_REQUESTS.value(), "RATE_LIMIT", "Demasiadas solicitudes; espere un momento");
             return;
         }
         chain.doFilter(request, response);
