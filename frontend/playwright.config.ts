@@ -22,10 +22,10 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'chromium', use: { ...devices['Desktop Chrome'], channel: process.env['PW_CHANNEL'] } },
     { name: 'firefox', use: { ...devices['Desktop Firefox'] }, grepInvert: /@unico/ },
     { name: 'safari', use: { ...devices['Desktop Safari'] }, grepInvert: /@unico/ },
-    { name: 'android', use: { ...devices['Pixel 7'] }, grep: /@movil/ },
+    { name: 'android', use: { ...devices['Pixel 7'], channel: process.env['PW_CHANNEL'] }, grep: /@movil/ },
     { name: 'iphone', use: { ...devices['iPhone 15'] }, grep: /@movil/ },
   ],
 });
