@@ -187,6 +187,18 @@
 
     <build>
         <finalName>unisfera</finalName>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>../docs/manuales</directory>
+                <targetPath>manuals</targetPath>
+                <includes>
+                    <include>*.md</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
