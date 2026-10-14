@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>UNISFERA · Sistema universitario</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="UNISFERA: matrícula, notas, pagos y becas de una universidad en una sola esfera.">
+  <meta name="theme-color" content="#2457a6">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <style>
+    .boot { position: fixed; inset: 0; display: grid; place-items: center; background: #f7f3ea; font-family: Georgia, serif; color: #12162b; }
+    .boot div { width: 64px; height: 64px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #84acee, #2457a6 55%, #172f52);
+      box-shadow: 0 0 0 0 rgba(47, 105, 209, .4); animation: boot-pulse 1.4s infinite; }
+    .boot p { margin-top: 18px; letter-spacing: .3em; font-size: 13px; }
+    @keyframes boot-pulse { to { box-shadow: 0 0 0 26px rgba(47, 105, 209, 0); } }
+    @media (prefers-color-scheme: dark) { .boot { background: #0d1122; color: #ecebf4; } }
+    @media (prefers-reduced-motion: reduce) { .boot div { animation: none; } }
+  </style>
+</head>
+<body>
+  <app-root><div class="boot" role="status" aria-label="Cargando UNISFERA"><div></div><p>UNISFERA</p></div></app-root>
+  <noscript>UNISFERA necesita JavaScript para funcionar.</noscript>
+</body>
+</html>
