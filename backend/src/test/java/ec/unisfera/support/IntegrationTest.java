@@ -58,6 +58,7 @@ public abstract class IntegrationTest {
         registry.add("app.cookie-secure", () -> "false");
         registry.add("app.storage-path", () -> System.getProperty("java.io.tmpdir") + "/unisfera-test-storage");
         registry.add("app.workers-enabled", () -> "false");
+        registry.add("app.payment-simulator-enabled", () -> "true");
     }
 
     @Autowired

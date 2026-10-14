@@ -28,7 +28,8 @@ public record AppProperties(
         @NotBlank String publicBaseUrl,
         @NotBlank String apiBaseUrl,
         @NotBlank String mailFrom,
-        boolean workersEnabled) {
+        boolean workersEnabled,
+        boolean paymentSimulatorEnabled) {
 
     public ZoneId zoneId() {
         return ZoneId.of(zone);

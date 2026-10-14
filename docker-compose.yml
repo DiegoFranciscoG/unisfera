@@ -68,6 +68,8 @@ services:
       MAIL_PORT: "1025"
       # En local se navega por http; en producción (https) debe quedar en true.
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      # Pasarela simulada: solo para la demo local; en producción va en false con una pasarela real.
+      PAYMENT_SIMULATOR_ENABLED: ${PAYMENT_SIMULATOR_ENABLED:-true}
       SPRING_PROFILES_ACTIVE: json
     volumes:
       - storage:/app/storage

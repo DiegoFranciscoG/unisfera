@@ -80,6 +80,8 @@ app:
   api-base-url: ${API_BASE_URL:http://localhost:8080}
   mail-from: ${MAIL_FROM:no-reply@unisfera.edu.ec}
   workers-enabled: ${WORKERS_ENABLED:true}
+  # La pasarela simulada permite "aprobar" pagos sin cobrar: solo para demostraciones y pruebas.
+  payment-simulator-enabled: ${PAYMENT_SIMULATOR_ENABLED:false}
   seed:
     enabled: ${SEED_DEMO_DATA:false}
     students: ${SEED_STUDENTS:1500}

@@ -133,6 +133,9 @@ public class FinanceController {
     @PublicEndpoint
     @GetMapping("/api/public/gateway/simulated/{reference}")
     public Map<String, Object> simulatorInfo(@PathVariable @Pattern(regexp = "^[A-Za-z0-9_-]{20,80}$") String reference) {
+        if (!simulator.enabled()) {
+            throw new ec.unisfera.shared.domain.NotFoundException("La pasarela simulada");
+        }
         return simulator.query(reference)
                 .<Map<String, Object>>map(n -> Map.of("reference", reference, "amount", n.amount(), "status", n.outcome().name()))
                 .orElseThrow(() -> new ec.unisfera.shared.domain.NotFoundException("La sesión de pago"));

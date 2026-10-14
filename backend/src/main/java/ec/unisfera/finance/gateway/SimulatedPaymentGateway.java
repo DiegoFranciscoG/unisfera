@@ -49,6 +49,10 @@ public class SimulatedPaymentGateway implements PaymentGateway {
 
     @Override
     public Checkout createCheckout(UUID paymentId, String reference, BigDecimal amount, String currency, String description) {
+        if (!enabled()) {
+            throw new ec.unisfera.shared.domain.BusinessRuleException("RN-24",
+                    "Los pagos en línea no están habilitados en esta instalación: falta configurar la pasarela de pagos");
+        }
         redis.opsForHash().putAll(STATE + reference, Map.of("amount", amount.toPlainString(), "status", Outcome.PENDING.name(),
                 "description", description));
         redis.expire(STATE + reference, STATE_TTL);
@@ -56,7 +60,15 @@ public class SimulatedPaymentGateway implements PaymentGateway {
     }
 
     /** Lo que haría el formulario alojado de la pasarela cuando el estudiante paga. */
+    /** Solo en demostraciones y pruebas: en producción la pasarela simulada no existe para nadie. */
+    public boolean enabled() {
+        return props.paymentSimulatorEnabled();
+    }
+
     public String simulate(String reference, Scenario scenario) {
+        if (!enabled()) {
+            throw new ec.unisfera.shared.domain.NotFoundException("La pasarela simulada");
+        }
         Object amount = redis.opsForHash().get(STATE + reference, "amount");
         if (amount == null) {
             throw new IllegalArgumentException("Referencia desconocida");
