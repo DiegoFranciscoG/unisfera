@@ -73,7 +73,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessRuleException.class)
     ProblemDetail businessRule(BusinessRuleException ex, HttpServletRequest request) {
-        return rule(ex.code(), ex.getMessage(), request);
+        ProblemDetail p = rule(ex.code(), ex.getMessage(), request);
+        if (!ex.details().isEmpty()) {
+            p.setProperty("violations", ex.details());
+        }
+        return p;
     }
 
     @ExceptionHandler(ec.unisfera.identity.application.AuthenticationFailedException.class)

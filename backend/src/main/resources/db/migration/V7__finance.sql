@@ -31,7 +31,7 @@ create table tariff
     amount           numeric(12, 2) not null check (amount >= 0),
     tariff_version   int            not null default 1 check (tariff_version > 0),
     status           varchar(12)    not null default 'ACTIVE' check (status in ('ACTIVE', 'SUPERSEDED')),
-    superseded_by_id uuid references tariff (id),
+    superseded_by_id uuid references tariff (id) deferrable initially deferred,
     change_reason    text,
     created_at       timestamptz    not null default now(),
     created_by       uuid,
