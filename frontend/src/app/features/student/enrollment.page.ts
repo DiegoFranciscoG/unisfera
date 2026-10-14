@@ -155,7 +155,7 @@ interface Pick {
                   </ul>
                   <label class="mt-5 flex items-start gap-3 text-sm">
                     <input type="checkbox" class="mt-1" [checked]="accepted()" (change)="accepted.set(!accepted())" />
-                    <span>Revisé mi horario y acepto los valores calculados. Entiendo que retirarme después tiene plazos y efectos (RN-09).</span>
+                    <span>Revisé mi horario y acepto los valores calculados. Entiendo que retirarme después tiene plazos y efectos (RN-07).</span>
                   </label>
                   <button class="btn btn-teja mt-5 w-full !py-3.5 text-base" [disabled]="!accepted() || busy() || blocking()" (click)="confirm()">
                     @if (busy()) { Reservando cupos… } @else { Confirmar matrícula <app-icon name="check" [size]="18" /> }

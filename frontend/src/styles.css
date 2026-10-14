@@ -362,3 +362,13 @@ h1, h2, h3, .font-display {
 .prose-unisfera strong { font-weight: 750; }
 .flash { animation: flash 2.2s ease; border-radius: 8px; }
 @keyframes flash { 0%, 30% { background: var(--color-oro-100); } 100% { background: transparent; } }
+.prose-unisfera .table-wrap { overflow-x: auto; margin: 0.8rem 0; }
+.prose-unisfera table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.prose-unisfera th { text-align: left; font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); border-bottom: 2px solid var(--line); padding: 0.5rem; }
+.prose-unisfera td { border-bottom: 1px solid var(--line); padding: 0.5rem; vertical-align: top; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media print {
+  aside, header.topbar, app-toasts, app-help-drawer, .btn { display: none !important; }
+  .lg\:pl-\[264px\] { padding-left: 0 !important; }
+  body { background: white; }
+}

@@ -66,7 +66,7 @@ interface WithdrawalView {
           <p class="kicker">Retiro de asignatura</p>
           <h2 id="wd-title" class="mt-1 text-2xl">{{ e.subjectName }}</h2>
           <p class="muted mt-2 text-sm">El retiro voluntario tiene un plazo desde el inicio de clases; fuera de él solo procede por caso fortuito o fuerza mayor con documento.
-            <button class="font-bold underline" style="color: var(--brand)" (click)="help.show('retiros-homologaciones-certificados', 'rn-09')">Ver reglas</button></p>
+            <button class="font-bold underline" style="color: var(--brand)" (click)="help.show('retiros-homologaciones-certificados', 'retiro')">Ver reglas</button></p>
           <label class="label mt-4" for="wd-type">Tipo</label>
           <select id="wd-type" class="field" [value]="wType()" (change)="wType.set($any($event.target).value)">
             <option value="VOLUNTARY">Voluntario</option>

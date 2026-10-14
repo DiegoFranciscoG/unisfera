@@ -25,6 +25,14 @@ describe('renderMarkdown', () => {
   });
 });
 
+describe('tablas', () => {
+  it('convierte una tabla de Markdown con encabezado y escapa sus celdas', () => {
+    const html = renderMarkdown('| Rol | Uso |\n|---|---|\n| **Docente** | <b>notas</b> |');
+    expect(html).toContain('<th>Rol</th><th>Uso</th>');
+    expect(html).toContain('<td><strong>Docente</strong></td><td>&lt;b&gt;notas&lt;/b&gt;</td>');
+  });
+});
+
 describe('slugify', () => {
   it('quita tildes y signos', () => {
     expect(slugify('¿Cómo me matriculo?')).toBe('como-me-matriculo');
