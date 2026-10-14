@@ -27,7 +27,17 @@ cedula() {
   echo "${nine}$(((10 - sum % 10) % 10))"
 }
 
-password() { echo "Unisfera-$(rand_alnum 8)-Ok9"; }
+# Frase aleatoria que cumple la política: sin palabras bloqueadas (nombre de la institución, secuencias comunes).
+password() {
+  local p
+  while true; do
+    p="Cupula-$(openssl rand -base64 18 | tr -dc 'A-Za-z0-9' | head -c 14)-9x"
+    if ! echo "$p" | grep -qiE 'password|contrasena|unisfera|universidad|qwerty|123456|abcdef'; then
+      echo "$p"
+      return
+    fi
+  done
+}
 
 cat > .env <<EOF
 DB_PASSWORD=$(rand_alnum 16)
