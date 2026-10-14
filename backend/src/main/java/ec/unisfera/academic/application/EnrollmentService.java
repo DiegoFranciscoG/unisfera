@@ -125,7 +125,7 @@ public class EnrollmentService {
                 markUsed(used);
             }
         }
-        String status = advanceStatus(studentId, sectionIds.size(), context.maxSubjects());
+        String status = advanceStatus(studentId, sectionIds.size());
         events.publishEvent(new AcademicEvents.EnrollmentConfirmed(enrollmentId, studentId, periodId, type.name(),
                 ordered.stream().map(EnrollmentPolicy.Selection::subjectId).toList()));
         return confirmation(enrollmentId, status);
@@ -172,15 +172,22 @@ public class EnrollmentService {
         return new Confirmation(enrollmentId, header[0], header[1], status, details);
     }
 
-    /** RN-30: primera matrícula → ENROLLED; con carga suficiente (RRA art. 76) → REGULAR. */
-    private String advanceStatus(UUID studentId, int subjects, int maxSubjects) {
+    /**
+     * RN-30: primera matrícula → ENROLLED; con carga suficiente → REGULAR. RRA art. 76: la carga se mide
+     * contra las asignaturas que la malla prevé por período (promedio por nivel de SU malla).
+     */
+    private String advanceStatus(UUID studentId, int subjects) {
         String status = queries.student(studentId).status();
         if ("ADMITTED".equals(status)) {
             jdbc.sql("update student set status = 'ENROLLED' where id = :id").param("id", studentId).update();
             status = "ENROLLED";
         }
+        BigDecimal perPeriod = jdbc.sql("""
+                        select count(*)::numeric / nullif(count(distinct sb.level_id), 0) from subject sb
+                        join student st on st.curriculum_id = sb.curriculum_id where st.id = :s""")
+                .param("s", studentId).query(BigDecimal.class).single();
         BigDecimal loadPct = BigDecimal.valueOf(subjects).multiply(ec.unisfera.shared.domain.MoneyMath.hundred())
-                .divide(BigDecimal.valueOf(maxSubjects), 2, java.math.RoundingMode.HALF_UP);
+                .divide(perPeriod, 2, java.math.RoundingMode.HALF_UP);
         if ("ENROLLED".equals(status) && loadPct.compareTo(parameters.decimal(ParameterKeys.REGULAR_MIN_LOAD)) >= 0) {
             jdbc.sql("update student set status = 'REGULAR' where id = :id").param("id", studentId).update();
             status = "REGULAR";

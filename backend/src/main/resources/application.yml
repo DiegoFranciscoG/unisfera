@@ -80,3 +80,8 @@ app:
   api-base-url: ${API_BASE_URL:http://localhost:8080}
   mail-from: ${MAIL_FROM:no-reply@unisfera.edu.ec}
   workers-enabled: ${WORKERS_ENABLED:true}
+  seed:
+    enabled: ${SEED_DEMO_DATA:false}
+    students: ${SEED_STUDENTS:1500}
+    load-test-students: ${SEED_LOAD_TEST_STUDENTS:0}
+    demo-password: ${DEMO_PASSWORD:}
