@@ -22,10 +22,8 @@ import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataAccessException;
 
-@Import({Fixtures.class, TestUsers.class})
 class EnrollmentFlowIT extends IntegrationTest {
 
     private static final ZoneId ZONE = ZoneId.of("America/Guayaquil");

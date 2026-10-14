@@ -31,6 +31,11 @@ final class SyntheticPeople {
         this.random = random;
     }
 
+    /** Las cédulas ya registradas nunca se repiten (la base también lo impide con uq_person_identity). */
+    void reserve(java.util.Collection<String> existing) {
+        used.addAll(existing);
+    }
+
     Person next(int minAge, int maxAge, LocalDate today) {
         boolean female = random.nextBoolean();
         List<String> names = female ? FEMALE : MALE;

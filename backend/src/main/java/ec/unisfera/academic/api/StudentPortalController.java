@@ -2,6 +2,7 @@ package ec.unisfera.academic.api;
 
 import ec.unisfera.academic.application.AcademicAdminService;
 import ec.unisfera.academic.application.CurriculumProgressService;
+import ec.unisfera.academic.application.EnrollmentGate;
 import ec.unisfera.academic.application.EnrollmentService;
 import ec.unisfera.identity.security.AccessGuard;
 import ec.unisfera.identity.security.RequiresPermission;
@@ -40,12 +41,15 @@ public class StudentPortalController {
     private final CurriculumProgressService progress;
     private final EnrollmentService enrollment;
     private final AcademicAdminService admin;
+    private final EnrollmentGate gate;
 
-    public StudentPortalController(AccessGuard guard, CurriculumProgressService progress, EnrollmentService enrollment, AcademicAdminService admin) {
+    public StudentPortalController(AccessGuard guard, CurriculumProgressService progress, EnrollmentService enrollment, AcademicAdminService admin,
+                                   EnrollmentGate gate) {
         this.guard = guard;
         this.progress = progress;
         this.enrollment = enrollment;
         this.admin = admin;
+        this.gate = gate;
     }
 
     @Operation(summary = "Mi malla con avance: aprobadas, en curso, disponibles y bloqueadas por prerrequisito")
@@ -69,7 +73,7 @@ public class StudentPortalController {
     @Operation(summary = "Confirmar matrícula (la base reserva el cupo de forma atómica)")
     @PostMapping("/enrollment")
     public EnrollmentService.Confirmation enroll(@Valid @RequestBody EnrollmentRequest body) {
-        return enrollment.enroll(guard.currentStudentId(), body.sectionIds());
+        return gate.enroll(guard.currentStudentId(), body.sectionIds());
     }
 
     @GetMapping("/enrollment")

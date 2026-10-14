@@ -13,9 +13,7 @@ import java.time.Instant;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Import;
 
-@Import(TestUsers.class)
 class AuthFlowIT extends IntegrationTest {
 
     @Autowired

@@ -2,7 +2,7 @@ package ec.unisfera.academic;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import ec.unisfera.academic.application.EnrollmentService;
+import ec.unisfera.academic.application.EnrollmentGate;
 import ec.unisfera.shared.domain.BusinessRuleException;
 import ec.unisfera.support.Fixtures;
 import ec.unisfera.support.IntegrationTest;
@@ -16,14 +16,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.RepeatedTest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataAccessException;
 
 /**
  * T-02 · RN-05: 500 estudiantes intentan a la vez el último paralelo de 30 cupos. Resultado exacto:
  * 30 matriculados, 470 rechazados con mensaje claro, cero sobrecupo. Se repite 20 veces.
  */
-@Import(Fixtures.class)
 class SeatConcurrencyIT extends IntegrationTest {
 
     private static final int STUDENTS = 500;
@@ -32,7 +30,7 @@ class SeatConcurrencyIT extends IntegrationTest {
     @Autowired
     Fixtures fixtures;
     @Autowired
-    EnrollmentService enrollment;
+    EnrollmentGate enrollment;
 
     @RepeatedTest(20)
     void rn05_500ThreadsCompeteFor30SeatsAndNobodyOverbooks() throws Exception {

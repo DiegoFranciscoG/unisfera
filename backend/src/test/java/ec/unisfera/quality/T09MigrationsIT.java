@@ -16,8 +16,9 @@ class T09MigrationsIT extends IntegrationTest {
         List<String> failed = jdbc.sql("select version from flyway_schema_history where not success").query(String.class).list();
         assertThat(failed).isEmpty();
         assertThat(jdbc.sql("select count(*) from flyway_schema_history where success").query(Long.class).single()).isGreaterThanOrEqualTo(14);
-        assertThat(jdbc.sql("select count(*) from user_account u join user_role ur on ur.user_id = u.id join role r on r.id = ur.role_id where r.code = 'SUPERADMIN'")
-                .query(Long.class).single()).isEqualTo(1);
+        assertThat(jdbc.sql("""
+                        select count(*) from user_account u join user_role ur on ur.user_id = u.id join role r on r.id = ur.role_id
+                        where r.code = 'SUPERADMIN' and u.username = :id""").param("id", SUPERADMIN_ID).query(Long.class).single()).isEqualTo(1);
     }
 
     @Test

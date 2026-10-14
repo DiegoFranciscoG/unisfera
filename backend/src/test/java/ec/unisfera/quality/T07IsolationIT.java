@@ -16,7 +16,6 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
@@ -26,7 +25,6 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  * T-07 · Aislamiento por identidad contra TODOS los endpoints (no una muestra): se recorren los
  * mapeos registrados en Spring MVC y cada uno se invoca con identificadores ajenos.
  */
-@Import(TestUsers.class)
 class T07IsolationIT extends IntegrationTest {
 
     @Autowired

@@ -23,6 +23,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
  * en ningún archivo del repositorio.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@org.springframework.context.annotation.Import({TestUsers.class, Fixtures.class})
 public abstract class IntegrationTest {
 
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -30,7 +31,8 @@ public abstract class IntegrationTest {
     public static final String SUPERADMIN_PASSWORD = "Sa-" + randomBase64(18);
 
     static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:18.6-alpine")
-            .withDatabaseName("unisfera").withUsername("unisfera").withPassword(randomBase64(18));
+            .withDatabaseName("unisfera").withUsername("unisfera").withPassword(randomBase64(18))
+            .withCommand("postgres", "-c", "max_connections=300");
     static final GenericContainer<?> VALKEY = new GenericContainer<>("valkey/valkey:8.1.10-alpine").withExposedPorts(6379);
 
     static {
@@ -44,6 +46,7 @@ public abstract class IntegrationTest {
         registry.add("spring.datasource.username", POSTGRES::getUsername);
         registry.add("spring.datasource.password", POSTGRES::getPassword);
         registry.add("spring.datasource.hikari.maximum-pool-size", () -> "40");
+        registry.add("spring.datasource.hikari.connection-timeout", () -> "30000");
         registry.add("spring.data.redis.url", () -> "redis://" + VALKEY.getHost() + ":" + VALKEY.getMappedPort(6379));
         registry.add("app.cors-allowed-origins", () -> "http://localhost:4200");
         registry.add("app.jwt-secret", () -> randomBase64(48));

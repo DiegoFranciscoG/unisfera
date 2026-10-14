@@ -12,10 +12,8 @@ import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Import;
 
 /** T-08 · RN-23: salud y psicología solo para BIENESTAR, cifradas, con lectura auditada y fuera de los reportes. */
-@Import({Fixtures.class, TestUsers.class})
 class T08SensitiveDataIT extends IntegrationTest {
 
     @Autowired

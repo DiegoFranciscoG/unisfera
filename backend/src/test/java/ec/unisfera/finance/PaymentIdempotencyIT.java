@@ -18,10 +18,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Import;
 
 /** T-03 · RN-24: la misma notificación llega cinco veces (dos simultáneas) y se registra un solo pago. */
-@Import(Fixtures.class)
 class PaymentIdempotencyIT extends IntegrationTest {
 
     @Autowired

@@ -194,6 +194,7 @@ public class DemoDataGenerator {
     public Result generate(int studentCount, int loadTestStudents, String demoPassword) {
         random = new SplittableRandom(SEED);
         people = new SyntheticPeople(random);
+        people.reserve(jdbc.sql("select id_number from person").query(String.class).list());
         zone = props.zoneId();
         today = LocalDate.now(zone);
         currency = parameters.currency();
