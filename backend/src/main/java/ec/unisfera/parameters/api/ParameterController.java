@@ -32,7 +32,7 @@ public class ParameterController {
     /** Valores que la interfaz necesita para validar en vivo: los mismos que usan la base y el dominio (Ley 3). */
     public record UiSettings(BigDecimal scaleMin, BigDecimal scaleMax, BigDecimal passingGrade, BigDecimal minAttendance,
                              BigDecimal attendanceWarningMargin, int maxSubjectsPerPeriod, int passwordMinLength,
-                             String currency, String zone) {
+                             String currency, String zone, String closeConfirmationPhrase) {
     }
 
     private final ParameterService parameters;
@@ -69,6 +69,7 @@ public class ParameterController {
         return new UiSettings(parameters.decimal(ParameterKeys.SCALE_MIN), parameters.decimal(ParameterKeys.SCALE_MAX),
                 parameters.decimal(ParameterKeys.PASSING_GRADE), parameters.decimal(ParameterKeys.MIN_ATTENDANCE),
                 parameters.decimal(ParameterKeys.ATTENDANCE_WARNING_MARGIN), parameters.integer(ParameterKeys.MAX_SUBJECTS),
-                parameters.integer(ParameterKeys.PASSWORD_MIN_LENGTH), parameters.text(ParameterKeys.CURRENCY), props.zone());
+                parameters.integer(ParameterKeys.PASSWORD_MIN_LENGTH), parameters.text(ParameterKeys.CURRENCY), props.zone(),
+                parameters.text("evaluation.close_confirmation_phrase"));
     }
 }

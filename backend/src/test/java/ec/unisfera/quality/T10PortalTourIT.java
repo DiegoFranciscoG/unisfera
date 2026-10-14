@@ -318,8 +318,9 @@ class T10PortalTourIT extends IntegrationTest {
                 .post("/api/me/scholarships/applications/" + application + "/documents/CERT_INGRESOS").then().statusCode(204);
         ok(as(studentToken).post("/api/me/scholarships/applications/" + application + "/submit"));
         assertThat(ok(as(welfare).get("/api/admin/welfare/calls/" + call + "/applications")).jsonPath().getList("status")).contains("SUBMITTED");
-        UUID criterion = jdbc.sql("select id from evaluation_criterion where call_id = :c").param("c", UUID.fromString(call)).query(UUID.class).single();
-        ok(as(welfare).body(Map.of("scores", Map.of(criterion.toString(), 88))).post("/api/admin/welfare/applications/" + application + "/score"));
+        assertThat(ok(as(welfare).get("/api/admin/welfare/types")).jsonPath().getList("id")).contains(type);
+        String criterion = ok(as(welfare).get("/api/admin/welfare/calls/" + call + "/criteria")).jsonPath().getString("[0].id");
+        ok(as(welfare).body(Map.of("scores", Map.of(criterion, 88))).post("/api/admin/welfare/applications/" + application + "/score"));
         String committee = users.createAndLogin("WELFARE");
         noServerError(as(committee).body(body("actNumber", "CB-" + randomCode(4), "sessionDate", LocalDate.now(ZONE), "summary", "Sesión ordinaria del comité",
                 "members", List.of(Map.of("name", "Presidencia del comité", "role", "PRESIDENTE"), Map.of("name", "Bienestar", "role", "SECRETARIO"),

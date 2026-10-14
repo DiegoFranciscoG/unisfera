@@ -181,6 +181,18 @@ public class WelfareController {
         return scholarships.calls(false);
     }
 
+    @RequiresPermission("SCHOLARSHIP_READ")
+    @GetMapping("/api/admin/welfare/types")
+    public List<ScholarshipService.TypeView> types() {
+        return scholarships.types();
+    }
+
+    @RequiresPermission("SCHOLARSHIP_READ")
+    @GetMapping("/api/admin/welfare/calls/{callId}/criteria")
+    public List<ScholarshipService.CriterionView> criteria(@PathVariable UUID callId) {
+        return scholarships.criteria(callId);
+    }
+
     @RequiresPermission("SCHOLARSHIP_MANAGE")
     @PostMapping("/api/admin/welfare/types")
     public Map<String, UUID> createType(@Valid @RequestBody TypeRequest r) {

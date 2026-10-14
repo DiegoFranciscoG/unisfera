@@ -60,6 +60,12 @@ public class ScholarshipService {
     public record Member(String name, String role, UUID userId) {
     }
 
+    public record TypeView(UUID id, String code, String name, String mode, BigDecimal value) {
+    }
+
+    public record CriterionView(UUID id, String name, BigDecimal maxScore, BigDecimal weight) {
+    }
+
     private final JdbcClient jdbc;
     private final FileStorageService files;
     private final NotificationService notifications;
@@ -113,6 +119,16 @@ public class ScholarshipService {
     }
 
     @Transactional(readOnly = true)
+    public List<TypeView> types() {
+        return jdbc.sql("select id, code, name, mode, value from scholarship_type order by name")
+                .query((rs, n) -> new TypeView(rs.getObject(1, UUID.class), rs.getString(2), rs.getString(3), rs.getString(4), rs.getBigDecimal(5))).list();
+    }
+
+    public List<CriterionView> criteria(UUID callId) {
+        return jdbc.sql("select id, name, max_score, weight from evaluation_criterion where call_id = :c order by sort_order").param("c", callId)
+                .query((rs, n) -> new CriterionView(rs.getObject(1, UUID.class), rs.getString(2), rs.getBigDecimal(3), rs.getBigDecimal(4))).list();
+    }
+
     public List<CallView> calls(boolean onlyOpen) {
         return jdbc.sql("""
                         select c.id, t.code, t.name, t.mode, t.value, p.code, c.name, c.quota, c.opens_at, c.closes_at, c.results_by, c.status,
