@@ -1,0 +1,127 @@
+name: CI
+
+on:
+  push:
+    branches: [main, 'feature/**']
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  secretos:
+    name: Escaneo de secretos (gitleaks)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Instalar gitleaks 8.30.1 (SHA-256 verificado)
+        run: |
+          curl -fsSL -o gl.tgz https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+          echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  gl.tgz" | sha256sum -c -
+          tar -xzf gl.tgz gitleaks
+      - name: Escanear historial completo
+        run: ./gitleaks git . --redact --verbose --exit-code 1
+
+  backend:
+    name: Backend · pruebas unitarias, integración y cobertura
+    runs-on: ubuntu-24.04
+    needs: secretos
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+      - name: Maven verify (JUnit + Testcontainers + umbrales JaCoCo)
+        working-directory: backend
+        run: ./mvnw -B -ntp verify
+      - name: Publicar informe de cobertura
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: cobertura-backend
+          path: backend/target/site/jacoco
+          retention-days: 14
+
+  frontend:
+    name: Frontend · pruebas y compilación
+    runs-on: ubuntu-24.04
+    needs: secretos
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm test
+      - run: npm run build
+
+  dependencias:
+    name: Vulnerabilidades de dependencias (Trivy)
+    runs-on: ubuntu-24.04
+    needs: secretos
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Trivy 0.76.0 (imagen oficial fijada)
+        run: |
+          docker run --rm -v "$PWD:/src:ro" aquasec/trivy:0.76.0 fs /src \
+            --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --skip-dirs /src/frontend/node_modules
+
+  e2e:
+    name: Flujos críticos end-to-end (Playwright sobre docker compose)
+    runs-on: ubuntu-24.04
+    needs: [backend, frontend]
+    if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Secretos efímeros para el entorno de prueba
+        run: |
+          ./scripts/generar-env.sh
+          sed -i 's/^SEED_STUDENTS=.*/SEED_STUDENTS=300/; s/^SEED_LOAD_TEST_STUDENTS=.*/SEED_LOAD_TEST_STUDENTS=30/' .env
+      - name: Levantar el sistema completo
+        run: docker compose up --build -d --wait --wait-timeout 900
+      - name: Usuarios demo del escenario
+        run: |
+          {
+            echo "E2E_PASSWORD=$(grep '^DEMO_PASSWORD=' .env | cut -d= -f2-)"
+            echo "E2E_STUDENT=$(docker compose logs backend | grep -o 'Cuenta demo STUDENT → usuario [0-9A-Za-z]*' | awk '{print $NF}' | head -1)"
+            echo "E2E_TEACHER=$(docker compose logs backend | grep -o 'Cuenta demo TEACHER → usuario [0-9A-Za-z]*' | awk '{print $NF}' | head -1)"
+            echo "E2E_NEW_STUDENT=$(docker compose exec -T backend sed -n 2p /app/storage/seed/students.csv)"
+          } >> "$GITHUB_ENV"
+      - name: Instalar Playwright
+        working-directory: frontend
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Ejecutar flujos críticos
+        working-directory: frontend
+        env:
+          E2E_BASE_URL: http://localhost:8081
+        run: npx playwright test
+      - name: Informe de Playwright
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playwright-report
+          path: frontend/playwright-report
+          retention-days: 7
+      - name: Registros del backend
+        if: failure()
+        run: docker compose logs backend | tail -200
