@@ -1,0 +1,72 @@
+### Colección de ejemplos de la API de UNISFERA (IntelliJ HTTP Client / VS Code REST Client).
+### Variables: defina @usuario y @clave con una cuenta demo (cédula ficticia y DEMO_PASSWORD de su .env).
+@base = http://localhost:8080
+@usuario = CAMBIAR
+@clave = CAMBIAR
+
+### Configuración pública para la interfaz (escala, nota mínima, moneda: todo viene de parámetros)
+GET {{base}}/api/public/settings
+
+### Ingreso con cédula y contraseña
+# @name ingreso
+POST {{base}}/api/auth/login
+Content-Type: application/json
+
+{ "username": "{{usuario}}", "password": "{{clave}}" }
+
+### Usuario actual
+@token = {{ingreso.response.body.accessToken}}
+GET {{base}}/api/auth/me
+Authorization: Bearer {{token}}
+
+### Malla del estudiante con el estado de cada asignatura
+GET {{base}}/api/me/curriculum
+Authorization: Bearer {{token}}
+
+### Oferta del período (paralelos con cupos en vivo)
+GET {{base}}/api/me/enrollment/offer
+Authorization: Bearer {{token}}
+
+### Vista previa: reglas y costo antes de confirmar
+POST {{base}}/api/me/enrollment/preview
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "sectionIds": ["00000000-0000-0000-0000-000000000000"] }
+
+### Matrícula (reserva atómica de cupos)
+POST {{base}}/api/me/enrollment
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "sectionIds": ["00000000-0000-0000-0000-000000000000"] }
+
+### Notas del período y lo que falta para aprobar
+GET {{base}}/api/me/grades
+Authorization: Bearer {{token}}
+
+### Kardex oficial (solo actas cerradas)
+GET {{base}}/api/me/kardex
+Authorization: Bearer {{token}}
+
+### Estado de cuenta
+GET {{base}}/api/me/account
+Authorization: Bearer {{token}}
+
+### Intento de pago idempotente ($uuid genera una clave nueva; fíjela para comprobar que repetir devuelve el mismo intento)
+POST {{base}}/api/me/payments/intents
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Idempotency-Key: {{$uuid}}
+
+{ "amount": 25.00 }
+
+### Manuales públicos y búsqueda
+GET {{base}}/api/public/manuals/search?q=tercera%20matricula
+
+### Error de regla: formato RFC 9457 con código y enlace al manual
+POST {{base}}/api/me/enrollment
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "sectionIds": [] }
