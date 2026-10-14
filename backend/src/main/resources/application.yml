@@ -1,0 +1,82 @@
+spring:
+  application:
+    name: unisfera
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:20}
+      connection-timeout: 5000
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate.jdbc.time_zone: UTC
+      hibernate.jdbc.batch_size: 50
+      hibernate.order_inserts: true
+      hibernate.order_updates: true
+  flyway:
+    locations: classpath:db/migration
+  data:
+    redis:
+      url: ${REDIS_URL}
+      timeout: 2s
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+  servlet:
+    multipart:
+      max-file-size: 6MB
+      max-request-size: 7MB
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+
+server:
+  port: ${APP_PORT:8080}
+  forward-headers-strategy: framework
+  shutdown: graceful
+  error:
+    include-stacktrace: never
+    include-message: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+  tracing:
+    sampling:
+      probability: ${TRACING_SAMPLING:0.0}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+  default-produces-media-type: application/json
+
+app:
+  zone: America/Guayaquil
+  cors-allowed-origins: ${CORS_ALLOWED_ORIGINS}
+  jwt-secret: ${JWT_SECRET}
+  sensitive-data-key: ${SENSITIVE_DATA_KEY}
+  act-signing-key: ${ACT_SIGNING_KEY}
+  gateway-webhook-secret: ${GATEWAY_WEBHOOK_SECRET}
+  superadmin-id-number: ${SUPERADMIN_ID_NUMBER}
+  superadmin-initial-password: ${SUPERADMIN_INITIAL_PASSWORD}
+  cookie-secure: ${COOKIE_SECURE:true}
+  storage-path: ${STORAGE_PATH:./storage}
+  public-base-url: ${PUBLIC_BASE_URL:http://localhost:4200}
+  api-base-url: ${API_BASE_URL:http://localhost:8080}
+  mail-from: ${MAIL_FROM:no-reply@unisfera.edu.ec}
+  workers-enabled: ${WORKERS_ENABLED:true}
