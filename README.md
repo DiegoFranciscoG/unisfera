@@ -259,6 +259,8 @@ Pruebas obligatorias del proyecto:
 | T-11 | Carga del día de matrícula | `load-tests/k6/matricula.js` |
 | T-12 | Cero secretos y cero datos personales reales | gitleaks en CI + verificación previa a publicar |
 
+Resultado de la prueba de carga (T-11) en un portátil con `docker compose`: 2.000 matrículas en 2 min 13 s con 250 usuarios concurrentes; p95 de 237 ms al matricular y de 78 ms en oferta y vista previa; 0 % de errores del servidor; 659 matrículas confirmadas y 1.340 rechazadas correctamente por falta de cupo (RN-05). Verificación posterior en la base: 0 paralelos sobrevendidos, 0 contadores descuadrados, 0 choques de horario y 0 estados de cuenta descuadrados.
+
 Cobertura de líneas del backend: **88 %** (JaCoCo; umbral 85 % en dominio y 75 % en servicios de aplicación, y el build falla si baja). Ejecutar todo:
 
 ```bash
