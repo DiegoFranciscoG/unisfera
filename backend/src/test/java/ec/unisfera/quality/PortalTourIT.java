@@ -25,11 +25,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * T-10 · Recorrido de los tres portales sobre el escenario demo: cada pantalla obtiene sus datos
+ * Recorrido de los tres portales sobre el escenario demo: cada pantalla obtiene sus datos
  * reales, los flujos administrativos se completan de punta a punta y ninguna respuesta es un 5xx.
  * Si una regla de negocio rechaza la acción, la respuesta debe ser un problema 4xx con su código.
  */
-class T10PortalTourIT extends IntegrationTest {
+class PortalTourIT extends IntegrationTest {
 
     private static final ZoneId ZONE = ZoneId.of("America/Guayaquil");
 
