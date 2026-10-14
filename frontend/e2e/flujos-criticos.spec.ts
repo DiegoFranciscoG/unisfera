@@ -11,7 +11,7 @@ async function menu(page: Page, name: string): Promise<void> {
   if (await burger.isVisible()) {
     await burger.click();
   }
-  await page.getByRole('link', { name }).click();
+  await page.getByRole('link', { name, exact: true }).click();
 }
 
 async function login(page: Page, username: string): Promise<void> {
@@ -57,6 +57,7 @@ test.describe('Estudiante', () => {
   test('paga en línea con la pasarela simulada y obtiene su factura (RN-24)', async ({ page }) => {
     await login(page, STUDENT);
     await menu(page, 'Cuenta y pagos');
+    await expect(page.getByText(/Saldo pendiente/).first()).toBeVisible();
     const pay = page.getByRole('button', { name: /Pagar en línea/ });
     test.skip(!(await pay.isVisible()), 'El estudiante demo no tiene saldo pendiente');
     await page.locator('#amount').fill('10');

@@ -384,3 +384,7 @@ input, select, textarea, button { font: inherit; max-width: 100%; }
 @supports not (overflow: clip) {
   body { overflow-x: hidden; }
 }
+
+/* Los adornos nunca capturan clics y el encabezado fijo nunca tapa lo que el navegador desplaza a la vista. */
+.orb, .coins, .orbit-deco, .medal, .core { pointer-events: none; }
+html { scroll-padding-top: 5.5rem; }
