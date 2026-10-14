@@ -370,7 +370,7 @@ public class DemoDataGenerator {
                 UUID personId = person(person);
                 UUID teacherId = UuidV7.next();
                 jt.update("insert into teacher (id, person_id, code, highest_degree, dedication, category) values (?, ?, ?, ?, ?, ?)", teacherId, personId,
-                        "D" + String.format("%05d", 101 + teacherIds.size()), degrees[c], t < 6 ? "TIEMPO_COMPLETO" : "MEDIO_TIEMPO",
+                        "D" + String.format("%05d", jt.queryForObject("select nextval('teacher_code_seq')", Long.class)), degrees[c], t < 6 ? "TIEMPO_COMPLETO" : "MEDIO_TIEMPO",
                         new String[]{"AUXILIAR", "AGREGADO", "PRINCIPAL"}[t % 3]);
                 teacherIds.add(teacherId);
                 if (c == 0 && t == 0) {

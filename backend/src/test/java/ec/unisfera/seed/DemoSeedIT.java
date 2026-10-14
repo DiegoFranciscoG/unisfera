@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import ec.unisfera.support.IntegrationTest;
 import java.math.BigDecimal;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -19,21 +20,20 @@ class DemoSeedIT extends IntegrationTest {
 
     @Test
     void t09_seedLoadsACoherentScenario() {
-        if (!generator.alreadySeeded()) {
-            DemoDataGenerator.Result r = generator.generate(150, 20, "Demo-" + randomBase64(12));
-            assertThat(r.subjects()).isEqualTo(180);
-            assertThat(r.periods()).isEqualTo(5);
-            assertThat(r.teachers()).isEqualTo(60);
-            assertThat(r.demoUsers()).containsKeys("STUDENT", "TEACHER", "FINANCE", "WELFARE", "ACADEMIC_ADMIN", "REGISTRAR", "AUDITOR");
-        }
+        Map<String, String> users = DemoScenario.ensure(generator);
+        assertThat(users).containsKeys("STUDENT", "TEACHER", "FINANCE", "WELFARE", "ACADEMIC_ADMIN", "REGISTRAR", "AUDITOR");
+        assertThat(jdbc.sql("select count(*) from subject s join curriculum c on c.id = s.curriculum_id join career k on k.id = c.career_id where k.code in ('SOF','CIV','ADE','CON','PSI','EDU')")
+                .query(Long.class).single()).isEqualTo(180);
         long secondAttempts = jdbc.sql("select count(*) from enrollment_detail where attempt_number = 2").query(Long.class).single();
         long failed = jdbc.sql("select count(*) from v_kardex where result <> 'APPROVED'").query(Long.class).single();
         assertThat(failed).isPositive();
         assertThat(secondAttempts).isPositive();
+        // RN-21: toda beca descuenta los cargos emitidos desde su otorgamiento (nunca los anteriores).
         long awardsWithoutDiscount = jdbc.sql("""
                         select count(*) from scholarship_award a join academic_period sp on sp.id = a.start_period_id
                         where exists (select 1 from charge c join academic_period cp on cp.id = c.period_id
-                                      where c.student_id = a.student_id and cp.classes_start >= sp.classes_start and c.status = 'ACTIVE')
+                                      where c.student_id = a.student_id and cp.classes_start >= sp.classes_start and c.status = 'ACTIVE'
+                                            and c.created_at >= a.created_at)
                           and not exists (select 1 from discount_applied d where d.origin_id = a.id)""").query(Long.class).single();
         assertThat(awardsWithoutDiscount).isZero();
         assertThat(jdbc.sql("select count(*) from scholarship_followup").query(Long.class).single()).isPositive();
