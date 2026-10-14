@@ -48,9 +48,7 @@ interface Pick {
         </div>
       </section>
     } @else {
-      <app-page-header kicker="Matrícula" [title]="offer.value()?.periodName ?? 'Matrícula'" subtitle="Elige tus asignaturas y paralelos; el costo y las reglas se calculan en vivo.">
-        <button class="btn btn-ghost" (click)="help.show('como-me-matriculo')"><app-icon name="help" [size]="16" /> ¿Cómo funciona?</button>
-      </app-page-header>
+      <app-page-header kicker="Matrícula" [title]="offer.value()?.periodName ?? 'Matrícula'" subtitle="Elige tus asignaturas y paralelos; el costo y las reglas se calculan en vivo." />
 
       @if (offer.value(); as o) {
         @if (o.alreadyEnrolled) {

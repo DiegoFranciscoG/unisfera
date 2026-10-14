@@ -164,7 +164,7 @@ export const SUBJECT_STATUS: Record<SubjectStatus, { label: string; chip: string
     .seg button { display: inline-flex; align-items: center; gap: .4rem; padding: .45rem .9rem; border-radius: 999px; font-weight: 700; font-size: .85rem; color: var(--muted); transition: all .2s; }
     .seg button.on { background: var(--surface); color: var(--brand); box-shadow: var(--shadow-tile); }
     .orbits { max-height: 78vh; }
-    .ring { fill: none; stroke: var(--line); stroke-width: 1.5; stroke-dasharray: 3 6; }
+    .ring { fill: none; stroke: var(--muted); stroke-opacity: .45; stroke-width: 1.5; stroke-dasharray: 3 6; }
     .ring.done { stroke: var(--color-rio-500); stroke-opacity: .5; stroke-dasharray: none; }
     .ring-label { font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; fill: var(--muted); }
     .core { filter: drop-shadow(0 10px 20px rgba(36,87,166,.45)); animation: float 6s ease-in-out infinite; }
@@ -174,9 +174,9 @@ export const SUBJECT_STATUS: Record<SubjectStatus, { label: string; chip: string
     .planet .halo { opacity: 0; transition: opacity .25s, transform .25s; }
     .planet:hover .halo, .planet:focus-visible .halo, .planet.sel .halo { opacity: .25; }
     .planet .body { transition: transform .25s cubic-bezier(.2,.9,.3,1.4); stroke: var(--surface); stroke-width: 3; }
-    .planet .body.blocked { stroke: var(--muted); stroke-dasharray: 3 3; stroke-width: 1.5; fill: var(--surface-2); }
+    .planet .body.blocked { stroke: var(--muted); stroke-dasharray: 3 3; stroke-width: 2; fill: var(--surface); }
     .planet:hover .body, .planet.sel .body { transform: scale(1.18); }
-    .planet.dim { opacity: .18; }
+    .planet.dim { opacity: .28; }
     .planet-label { font-family: var(--font-mono); font-size: 10px; font-weight: 600; fill: var(--text); paint-order: stroke; stroke: var(--bg); stroke-width: 3px; }
     .tick { fill: none; stroke: white; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
     .link { stroke: var(--color-teja-500); stroke-width: 2; stroke-dasharray: 5 5; animation: dash 1s linear infinite; }

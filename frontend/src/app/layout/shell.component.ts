@@ -70,7 +70,7 @@ const NAV: Record<'estudiante' | 'docente' | 'admin', { title: string; items: Na
           <app-sphere [size]="42" />
           <span>
             <span class="font-display block text-[1.55rem] leading-none tracking-tight">UNISFERA</span>
-            <span class="muted text-[0.7rem] font-bold uppercase tracking-[0.18em]">{{ nav().title }}</span>
+            <span class="muted block whitespace-nowrap text-[0.62rem] font-bold uppercase tracking-[0.12em]">{{ nav().title }}</span>
           </span>
         </a>
         <nav class="flex-1 overflow-y-auto px-3 pb-4">
@@ -95,7 +95,7 @@ const NAV: Record<'estudiante' | 'docente' | 'admin', { title: string; items: Na
             <span class="avatar grid h-10 w-10 shrink-0 place-items-center rounded-full font-bold">{{ initials() }}</span>
             <div class="min-w-0">
               <p class="truncate text-sm font-bold">{{ auth.user()?.displayName }}</p>
-              <p class="muted mono truncate text-xs">{{ auth.user()?.username }}</p>
+              <p class="muted mono truncate text-xs" title="Identificación enmascarada (LOPDP)">{{ maskedUser() }}</p>
             </div>
           </div>
           <div class="mt-3 grid grid-cols-3 gap-2">
@@ -186,6 +186,11 @@ export class ShellComponent implements OnInit, OnDestroy {
   protected readonly initials = computed(() =>
     (this.auth.user()?.displayName ?? '?').split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]).join(''),
   );
+  /** LOPDP: la identificación nunca se muestra completa en pantalla, ni siquiera a su titular. */
+  protected readonly maskedUser = computed(() => {
+    const u = this.auth.user()?.username ?? '';
+    return u.length > 4 ? '•'.repeat(u.length - 4) + u.slice(-4) : u;
+  });
   protected readonly greeting = computed(() => {
     const h = new Date().getHours();
     return h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches';

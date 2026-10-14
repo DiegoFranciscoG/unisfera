@@ -42,7 +42,7 @@ const KPI_STYLE: Record<string, { icon: string; tone: 'blue' | 'teja' | 'oro' | 
         @for (k of d.kpis; track k.key; let i = $index) {
           <a [routerLink]="style(k.key).link ?? null" class="block" style="animation: var(--animate-rise)" [style.animation-delay.ms]="i * 40">
             <app-stat [label]="k.label" [value]="k.value" [icon]="style(k.key).icon" [tone]="style(k.key).tone"
-              [decimals]="k.unit === 'USD' || k.unit === '%' ? 1 : 0" [prefix]="k.unit === 'USD' ? '$' : ''" [suffix]="k.unit === '%' ? '%' : ''" />
+              [decimals]="k.unit === 'USD' ? 2 : k.unit === '%' ? 1 : 0" [prefix]="k.unit === 'USD' ? '$' : ''" [suffix]="k.unit === '%' ? '%' : ''" />
           </a>
         }
       </div>
