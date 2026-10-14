@@ -1,0 +1,13 @@
+# Contexto del backend: solo se necesitan backend/ y docs/manuales/
+**/node_modules
+**/target
+**/dist
+**/.angular
+frontend
+load-tests
+e2e
+storage
+.git
+.github
+.env
+.env.*

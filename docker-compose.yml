@@ -1,0 +1,106 @@
+# UNISFERA en local: `docker compose up --build` levanta base, caché, correo, backend con datos demo y frontend.
+# Todos los secretos vienen de .env (copie .env.example). Si falta uno crítico, compose se detiene con un mensaje.
+name: unisfera
+
+services:
+  postgres:
+    image: postgres:18.6-alpine
+    environment:
+      POSTGRES_DB: unisfera
+      POSTGRES_USER: unisfera
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Defina DB_PASSWORD en .env}
+    command: ["postgres", "-c", "max_connections=200"]
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U unisfera -d unisfera"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  valkey:
+    image: valkey/valkey:8.1.10-alpine
+    command: ["valkey-server", "--requirepass", "${REDIS_PASSWORD:?Defina REDIS_PASSWORD en .env}", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli -a \"$$REDIS_PASSWORD\" --no-auth-warning ping | grep -q PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    restart: unless-stopped
+
+  mailpit:
+    image: axllent/mailpit:v1.31.5
+    ports:
+      - "127.0.0.1:8025:8025"
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/unisfera
+      DB_USER: unisfera
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@valkey:6379
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:8081,http://localhost:4200}
+      JWT_SECRET: ${JWT_SECRET:?Defina JWT_SECRET en .env}
+      SENSITIVE_DATA_KEY: ${SENSITIVE_DATA_KEY:?Defina SENSITIVE_DATA_KEY en .env}
+      ACT_SIGNING_KEY: ${ACT_SIGNING_KEY:?Defina ACT_SIGNING_KEY en .env}
+      GATEWAY_WEBHOOK_SECRET: ${GATEWAY_WEBHOOK_SECRET:?Defina GATEWAY_WEBHOOK_SECRET en .env}
+      SUPERADMIN_ID_NUMBER: ${SUPERADMIN_ID_NUMBER:?Defina SUPERADMIN_ID_NUMBER en .env}
+      SUPERADMIN_INITIAL_PASSWORD: ${SUPERADMIN_INITIAL_PASSWORD:?Defina SUPERADMIN_INITIAL_PASSWORD en .env}
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}
+      SEED_STUDENTS: ${SEED_STUDENTS:-1500}
+      SEED_LOAD_TEST_STUDENTS: ${SEED_LOAD_TEST_STUDENTS:-2000}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:?Defina DEMO_PASSWORD en .env}
+      PUBLIC_BASE_URL: http://localhost:8081
+      API_BASE_URL: http://backend:8080
+      MAIL_HOST: mailpit
+      MAIL_PORT: "1025"
+      # En local se navega por http; en producción (https) debe quedar en true.
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      SPRING_PROFILES_ACTIVE: json
+    volumes:
+      - storage:/app/storage
+    ports:
+      - "127.0.0.1:8080:8080"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "8081:8080"
+    restart: unless-stopped
+
+  k6:
+    image: grafana/k6:2.1.0
+    profiles: ["load"]
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      BASE_URL: http://backend:8080
+      DEMO_PASSWORD: ${DEMO_PASSWORD}
+      STUDENTS_CSV: /data/seed/students.csv
+    volumes:
+      - ./load-tests/k6:/scripts:ro
+      - ./load-tests/results:/results
+      - storage:/data:ro
+    command: ["run", "--summary-export=/results/summary.json", "/scripts/matricula.js"]
+
+volumes:
+  pgdata:
+  storage:
