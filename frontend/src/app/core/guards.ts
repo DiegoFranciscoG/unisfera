@@ -9,12 +9,16 @@ export const authGuard: CanActivateFn = () => {
 };
 
 export const permissionGuard = (...permissions: string[]): CanActivateFn => {
-  return () => {
+  return (_route, state) => {
     const auth = inject(AuthStore);
     if (!auth.isLoggedIn()) {
       return inject(Router).createUrlTree(['/ingresar']);
     }
-    return auth.hasAny(...permissions) ? true : inject(Router).createUrlTree([auth.home()]);
+    if (auth.hasAny(...permissions)) {
+      return true;
+    }
+    // Nunca redirige a la misma ruta denegada (evita bucles con combinaciones de roles poco comunes).
+    return inject(Router).createUrlTree([state.url === auth.home() ? '/ayuda' : auth.home()]);
   };
 };
 
