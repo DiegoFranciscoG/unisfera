@@ -74,10 +74,21 @@ jobs:
     needs: secretos
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+      # Maven Central limita por IP (429) a los runners compartidos: las dependencias se resuelven una vez
+      # con la caché de Maven y Trivy las analiza sin volver a consultar el repositorio.
+      - name: Resolver dependencias del backend
+        working-directory: backend
+        run: ./mvnw -B -ntp -q dependency:go-offline
       - name: Trivy 0.76.0 (imagen oficial fijada)
         run: |
-          docker run --rm -v "$PWD:/src:ro" aquasec/trivy:0.76.0 fs /src \
-            --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --skip-dirs /src/frontend/node_modules
+          docker run --rm -v "$PWD:/src:ro" -v "$HOME/.m2:/root/.m2:ro" aquasec/trivy:0.76.0 fs /src \
+            --scanners vuln,misconfig --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --offline-scan \
+            --skip-dirs /src/frontend/node_modules
 
   e2e:
     name: Flujos críticos end-to-end (Playwright sobre docker compose)
