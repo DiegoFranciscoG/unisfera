@@ -5,6 +5,7 @@ import { ApiService, download } from '../../core/api.service';
 import { AuthStore } from '../../core/auth.store';
 import { EcDatePipe, MoneyPipe } from '../../core/format';
 import { Page, PaymentView, Problem, Statement } from '../../core/models';
+import { newId } from '../../core/ids';
 import { ToastService } from '../../core/ui.services';
 import { IconComponent } from '../../shared/icon.component';
 import { EmptyComponent, PageHeaderComponent } from '../../shared/widgets';
@@ -197,7 +198,7 @@ export class AdminFinancePage {
   protected readonly source = signal('BANK');
   protected readonly statementDate = signal(new Date().toISOString().slice(0, 10));
   protected readonly reconciliation = signal<Reconciliation | null>(null);
-  private idempotencyKey = crypto.randomUUID();
+  private idempotencyKey = newId();
 
   protected readonly hits = rxResource({
     params: () => (this.debounced().trim().length >= 2 ? this.debounced().trim() : undefined),
@@ -222,7 +223,7 @@ export class AdminFinancePage {
       .subscribe({
         next: () => {
           this.busy.set(false);
-          this.idempotencyKey = crypto.randomUUID();
+          this.idempotencyKey = newId();
           this.amount.set(null);
           this.reference.set('');
           this.toasts.ok('Pago registrado', 'Se emitió la factura electrónica.');

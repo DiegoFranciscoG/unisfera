@@ -22,7 +22,7 @@ import { EmptyComponent, PageHeaderComponent, RingComponent, SkeletonComponent }
       <div class="grid gap-5 lg:grid-cols-2">
         @for (g of list; track g.detailId; let i = $index) {
           <article class="tile p-5" [style.animation-delay.ms]="i * 70" style="animation: var(--animate-rise)">
-            <header class="flex items-start justify-between gap-3">
+            <header class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div class="min-w-0">
                 <p class="mono muted text-[11px] font-bold">{{ g.subjectCode }} · Paralelo {{ g.sectionCode }}</p>
                 <h2 class="mt-1 text-xl leading-snug">{{ g.subjectName }}</h2>
@@ -31,8 +31,8 @@ import { EmptyComponent, PageHeaderComponent, RingComponent, SkeletonComponent }
                   @if (g.attempt > 1) { <span class="chip chip-teja">{{ g.attempt }}.ª matrícula</span> }
                 </div>
               </div>
-              <div class="flex gap-1">
-                <app-ring [value]="g.accumulated" [max]="s().scaleMax" [threshold]="s().passingGrade" label="nota" [size]="92" />
+              <div class="flex shrink-0 gap-1 self-center sm:self-start">
+                <app-ring [value]="graded(g) ? g.accumulated : null" [max]="s().scaleMax" [threshold]="s().passingGrade" label="nota" [size]="92" />
                 <app-ring [value]="g.attendancePct" [max]="100" [threshold]="g.minAttendance" label="asist." suffix="%" [size]="92" />
               </div>
             </header>
@@ -109,6 +109,11 @@ export class GradesPage {
   protected readonly s = this.settings.settings;
   protected readonly grades = rxResource({ stream: () => this.api.get<CurrentSubject[]>('/me/grades') });
   private readonly sims = signal<Record<string, number>>({});
+
+  /** Sin ninguna nota registrada aún, el anillo muestra «—» en lugar de un 0 que asusta. */
+  protected graded(g: CurrentSubject): boolean {
+    return g.components.some((c) => c.value !== null);
+  }
 
   protected simValue(g: CurrentSubject): number {
     return this.sims()[g.detailId] ?? Math.round(g.needed.neededAverage ?? this.s().passingGrade);

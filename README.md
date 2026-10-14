@@ -27,7 +27,19 @@ La demo pública se habilita al desplegar (ver [Despliegue](#despliegue)). En lo
 
 | Ingreso con cédula en azulejos | Malla en órbitas | Matrícula en tres pasos |
 |---|---|---|
-| ![Ingreso](docs/img/ingreso.png) | ![Malla](docs/img/malla.png) | ![Matrícula](docs/img/matricula.png) |
+| ![Ingreso con validación de cédula en vivo](docs/img/ingreso.png) | ![Malla curricular en anillos por nivel](docs/img/malla.png) | ![Asistente de matrícula con costo en vivo](docs/img/matricula.png) |
+
+| Planilla docente | Tablero institucional | Parámetros versionados |
+|---|---|---|
+| ![Planilla de notas del docente](docs/img/docente-planilla.png) | ![Tablero con indicadores y gráficos](docs/img/tablero.png) | ![Parámetros con línea de tiempo](docs/img/parametros.png) |
+
+La misma aplicación se adapta a teléfonos, tabletas y escritorio, en modo claro u oscuro:
+
+| Inicio en teléfono | Notas en teléfono | Menú en teléfono | Malla en modo oscuro |
+|---|---|---|---|
+| ![Inicio del estudiante en teléfono](docs/img/movil-inicio.png) | ![Notas en teléfono](docs/img/movil-notas.png) | ![Menú lateral en teléfono](docs/img/movil-menu.png) | ![Malla en modo oscuro](docs/img/malla-oscuro.png) |
+
+Las capturas se regeneran con `frontend/scripts/capturas.mjs` sobre el sistema en marcha.
 
 ## Problema que resuelve
 
@@ -61,7 +73,7 @@ UNISFERA convierte el Reglamento de Régimen Académico (CES), la LOES, la LOPDP
 - Bienestar: convocatorias, comité, alertas de deserción y atenciones cifradas con lectura auditada.
 - Nueve reportes con supresión de celdas pequeñas y exportación Excel/PDF en segundo plano; bitácora de auditoría.
 
-**Transversal:** ayuda contextual en cada pantalla, 14 manuales descargables en PDF, tema claro/oscuro, accesibilidad (teclado, lectores de pantalla, `prefers-reduced-motion`).
+**Transversal:** funciona en Chrome, Edge, Firefox y Safari, en teléfono, tableta y escritorio; ayuda contextual en cada pantalla, 14 manuales descargables en PDF, tema claro/oscuro, accesibilidad (teclado, lectores de pantalla, `prefers-reduced-motion`).
 
 ## Arquitectura
 
@@ -226,7 +238,8 @@ Los errores siguen RFC 9457 (`application/problem+json`) con `code` (`RN-05`, `S
 | Integración | Testcontainers (PostgreSQL 18 + Valkey) | Cada regla también la rechaza la base; flujos completos por HTTP |
 | Arquitectura | ArchUnit | Capas y módulos sin dependencias indebidas |
 | Frontend | Vitest | Reglas espejo (cédula, contraseña, cruces) y renderizado seguro de manuales |
-| End-to-end | Playwright | Ingreso, matrícula, pago y portal docente sobre el sistema completo |
+| End-to-end | Playwright | Ingreso, matrícula, pago y portal docente sobre el sistema completo, en Chromium, Firefox y Safari (WebKit), más Android e iPhone emulados |
+| Adaptabilidad | Playwright (`scripts/auditar-responsive.mjs`) | Las 23 pantallas de los tres portales en 360, 768 y 1280 px: ningún elemento se sale del ancho visible |
 | Carga | k6 | 2.000 matrículas en 10 minutos, p95 < 800 ms |
 
 Pruebas obligatorias del proyecto:

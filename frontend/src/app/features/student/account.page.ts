@@ -3,6 +3,7 @@ import { rxResource } from '@angular/core/rxjs-interop';
 import { ApiService, download } from '../../core/api.service';
 import { EcDatePipe, MoneyPipe } from '../../core/format';
 import { PaymentView, Problem, Statement } from '../../core/models';
+import { newId } from '../../core/ids';
 import { HelpService, ToastService } from '../../core/ui.services';
 import { IconComponent } from '../../shared/icon.component';
 import { CountUpComponent, EmptyComponent, PageHeaderComponent, SkeletonComponent } from '../../shared/widgets';
@@ -161,7 +162,7 @@ export class AccountPage {
   protected readonly amount = signal<number | null>(null);
   protected readonly paying = signal(false);
   /** La misma clave viaja en reintentos: si el usuario hace doble clic, el servidor devuelve el mismo intento (RN-24). */
-  private idempotencyKey = crypto.randomUUID();
+  private idempotencyKey = newId();
 
   protected readonly hasPending = computed(() => (this.payments.value() ?? []).some((p) => p.status === 'PENDING'));
 
@@ -170,7 +171,7 @@ export class AccountPage {
     this.paying.set(true);
     this.api.post<PaymentView>('/me/payments/intents', { amount }, { 'Idempotency-Key': this.idempotencyKey }).subscribe({
       next: (p) => {
-        this.idempotencyKey = crypto.randomUUID();
+        this.idempotencyKey = newId();
         if (p.checkoutUrl) {
           window.location.assign(p.checkoutUrl);
         } else {

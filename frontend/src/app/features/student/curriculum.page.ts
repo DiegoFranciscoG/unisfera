@@ -58,7 +58,7 @@ export const SUBJECT_STATUS: Record<SubjectStatus, { label: string; chip: string
               </defs>
               @for (ring of rings(); track ring.level) {
                 <circle cx="400" cy="400" [attr.r]="ring.radius" class="ring" [class.done]="ring.done" />
-                <text x="400" [attr.y]="400 - ring.radius + 14" text-anchor="middle" class="ring-label">Nivel {{ ring.level }}</text>
+                <text [attr.x]="ring.labelX" [attr.y]="ring.labelY" text-anchor="middle" dominant-baseline="middle" class="ring-label">Nivel {{ ring.level }}</text>
               }
               @if (selected(); as sel) {
                 @for (line of links(); track line.id) {
@@ -166,7 +166,7 @@ export const SUBJECT_STATUS: Record<SubjectStatus, { label: string; chip: string
     .orbits { max-height: 78vh; }
     .ring { fill: none; stroke: var(--muted); stroke-opacity: .45; stroke-width: 1.5; stroke-dasharray: 3 6; }
     .ring.done { stroke: var(--color-rio-500); stroke-opacity: .5; stroke-dasharray: none; }
-    .ring-label { font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; fill: var(--muted); }
+    .ring-label { font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; fill: var(--muted); paint-order: stroke; stroke: var(--surface); stroke-width: 4px; }
     .core { filter: drop-shadow(0 10px 20px rgba(36,87,166,.45)); animation: float 6s ease-in-out infinite; }
     .core-value { font-family: var(--font-display); font-size: 26px; fill: white; font-weight: 600; }
     .core-label { font-size: 10px; fill: rgba(255,255,255,.8); text-transform: uppercase; letter-spacing: .14em; font-weight: 800; }
@@ -205,14 +205,18 @@ export class CurriculumPage {
     const step = levels.length ? 300 / levels.length : 0;
     return levels.map((level, idx) => {
       const list = subjects.filter((s) => s.level === level);
-      return { level, radius: 92 + step * (idx + 0.5), subjects: list, done: list.every((s) => s.status === 'APPROVED') };
+      const radius = 92 + step * (idx + 0.5);
+      // La etiqueta va en el hueco entre planetas más cercano a la parte superior del anillo.
+      const angle = list.length ? this.gapAngle(list.length, idx) : -Math.PI / 2;
+      return { level, radius, subjects: list, done: list.every((s) => s.status === 'APPROVED'),
+        labelX: 400 + radius * Math.cos(angle), labelY: 400 + radius * Math.sin(angle) };
     });
   });
 
   protected readonly planets = computed<Planet[]>(() =>
     this.rings().flatMap((ring, r) =>
       ring.subjects.map((subject, i) => {
-        const angle = (i / ring.subjects.length) * Math.PI * 2 - Math.PI / 2 + r * 0.55;
+        const angle = this.planetAngle(i, ring.subjects.length, r);
         return { subject, x: 400 + ring.radius * Math.cos(angle), y: 400 + ring.radius * Math.sin(angle) };
       }),
     ),
@@ -238,6 +242,26 @@ export class CurriculumPage {
       .filter((p): p is Planet => !!p)
       .map((p) => ({ id: p.subject.id, x1: from.x, y1: from.y, x2: p.x, y2: p.y, ok: p.subject.status === 'APPROVED' }));
   });
+
+  /** Ángulo del planeta i en el anillo r (misma fórmula para planetas y etiquetas). */
+  private planetAngle(i: number, n: number, r: number): number {
+    return (i / n) * Math.PI * 2 - Math.PI / 2 + r * 0.55;
+  }
+
+  private gapAngle(n: number, r: number): number {
+    const top = -Math.PI / 2;
+    let best = top;
+    let bestDistance = Infinity;
+    for (let i = 0; i < n; i++) {
+      const mid = this.planetAngle(i, n, r) + Math.PI / n;
+      const d = Math.abs(Math.atan2(Math.sin(mid - top), Math.cos(mid - top)));
+      if (d < bestDistance) {
+        bestDistance = d;
+        best = mid;
+      }
+    }
+    return best;
+  }
 
   protected statusOf(s: SubjectProgress) {
     return SUBJECT_STATUS[s.status];

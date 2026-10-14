@@ -2,6 +2,7 @@ import { HttpErrorResponse, HttpInterceptorFn, HttpRequest } from '@angular/comm
 import { inject } from '@angular/core';
 import { catchError, switchMap, throwError } from 'rxjs';
 import { AuthStore } from './auth.store';
+import { newId } from './ids';
 
 /**
  * Añade el token y un identificador de correlación a cada petición. Ante un 401 intenta un único
@@ -11,7 +12,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthStore);
   const withHeaders = (r: HttpRequest<unknown>) => {
     const token = auth.token();
-    let headers = r.headers.set('X-Request-Id', crypto.randomUUID());
+    let headers = r.headers.set('X-Request-Id', newId());
     if (token && !r.url.includes('/api/auth/refresh')) {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }

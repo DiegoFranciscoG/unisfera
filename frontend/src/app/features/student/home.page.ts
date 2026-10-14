@@ -36,10 +36,10 @@ import { CountUpComponent, RingComponent, SkeletonComponent } from '../../shared
             </div>
           </div>
           <div class="ring-wrap grid place-items-center">
-            <app-ring [value]="creditsPct()" [max]="100" label="de tu carrera" suffix="%" [size]="168" />
+            <app-ring [value]="creditsPct()" [max]="100" label="de avance" suffix="%" [size]="168" />
           </div>
         </div>
-        <svg class="orbit-deco" viewBox="0 0 400 400" aria-hidden="true">
+        <svg class="orbit-deco hidden sm:block" viewBox="0 0 400 400" aria-hidden="true">
           <ellipse cx="200" cy="200" rx="190" ry="70" /><ellipse cx="200" cy="200" rx="150" ry="150" /><circle class="sat" r="6" />
         </svg>
       </section>
@@ -138,7 +138,7 @@ import { CountUpComponent, RingComponent, SkeletonComponent } from '../../shared
         <div class="mt-3 grid gap-3 sm:grid-cols-2">
           @for (g of grades.value() ?? []; track g.detailId) {
             <a routerLink="/estudiante/notas" class="flex items-center gap-3 rounded-xl p-2 hover:bg-[var(--surface-2)]">
-              <app-ring [value]="g.accumulated" [max]="settings.settings().scaleMax" [threshold]="settings.settings().passingGrade" [size]="64" />
+              <app-ring [value]="graded(g) ? g.accumulated : null" [max]="settings.settings().scaleMax" [threshold]="settings.settings().passingGrade" [size]="64" />
               <div class="min-w-0">
                 <p class="truncate text-sm font-bold">{{ g.subjectName }}</p>
                 @if (g.attendanceWarning) {
@@ -203,6 +203,10 @@ export class StudentHomePage {
       .flatMap((e) => e.blocks.filter((b) => b.weekday === day).map((b) => ({ ...b, subjectName: e.subjectName, subjectCode: e.subjectCode })))
       .sort((a, b) => a.start.localeCompare(b.start));
   });
+
+  protected graded(g: CurrentSubject): boolean {
+    return g.components.some((c) => c.value !== null);
+  }
 
   protected statusLabel(status: string): string {
     return STATUS_LABEL[status] ?? status;

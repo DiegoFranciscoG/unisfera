@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { ApiService } from '../../core/api.service';
@@ -21,6 +22,10 @@ interface ParameterVersion {
 }
 
 const GROUPS: Record<string, { label: string; icon: string }> = {
+  academic: { label: 'Académico', icon: 'book' },
+  kardex: { label: 'Kardex', icon: 'book' },
+  requests: { label: 'Solicitudes', icon: 'inbox' },
+  sri: { label: 'Facturación electrónica (SRI)', icon: 'file' },
   grading: { label: 'Calificaciones', icon: 'grade' },
   evaluation: { label: 'Evaluación y actas', icon: 'seal' },
   attendance: { label: 'Asistencia', icon: 'calendar' },
@@ -38,7 +43,7 @@ const GROUPS: Record<string, { label: string; icon: string }> = {
 /** LEY-1 «nada quemado»: cada valor de negocio es un parámetro versionado con vigencia y motivo. */
 @Component({
   selector: 'app-admin-parameters',
-  imports: [IconComponent, PageHeaderComponent, SkeletonComponent, EcDatePipe],
+  imports: [NgTemplateOutlet, IconComponent, PageHeaderComponent, SkeletonComponent, EcDatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-page-header kicker="LEY-1 · nada quemado" title="Parámetros institucionales"
@@ -59,32 +64,34 @@ const GROUPS: Record<string, { label: string; icon: string }> = {
               <h2 class="mb-2 flex items-center gap-2 text-lg"><app-icon [name]="g.icon" [size]="18" /> {{ g.label }}</h2>
               <div class="grid gap-2 md:grid-cols-2">
                 @for (v of g.items; track v.key) {
-                  <button class="param tile p-3 text-left" [class.sel]="selected()?.key === v.key" (click)="select(v)">
-                    <p class="mono muted truncate text-[11px] font-bold">{{ v.key }}</p>
-                    <p class="font-display text-2xl leading-tight">{{ display(v) }} <span class="muted text-sm font-sans">{{ v.unit }}</span></p>
-                    <p class="muted line-clamp-2 text-xs">{{ v.description }}</p>
+                  <button class="param tile min-w-0 p-3 text-left" [class.sel]="selected()?.key === v.key" (click)="select(v)">
+                    <p class="text-sm font-semibold leading-snug">{{ v.description }}</p>
+                    <ng-container *ngTemplateOutlet="valueTpl; context: { $implicit: v, big: false }" />
+                    <p class="mono muted mt-1 truncate text-[10px]" [title]="v.key">{{ v.key }}</p>
                   </button>
                 }
               </div>
             </section>
           }
         </div>
-        <aside class="tile h-fit p-5 xl:sticky xl:top-20">
+        <aside id="param-detail" class="tile h-fit min-w-0 scroll-mt-20 p-5 xl:sticky xl:top-20">
           @if (selected(); as v) {
-            <p class="mono muted text-xs font-bold">{{ v.key }}</p>
-            <h2 class="mt-1 text-xl">{{ v.description }}</h2>
-            <p class="mt-3 font-display text-4xl">{{ display(v) }} <span class="muted text-base">{{ v.unit }}</span></p>
-            <p class="muted text-xs">Vigente desde {{ v.validFrom | ecDate: 'datetime' }} · tipo {{ v.type }}</p>
+            <h2 class="text-xl leading-snug">{{ v.description }}</h2>
+            <p class="mono muted mt-1 break-all text-[11px]">{{ v.key }}</p>
+            <div class="mt-3"><ng-container *ngTemplateOutlet="valueTpl; context: { $implicit: v, big: true }" /></div>
+            <p class="muted mt-1 text-xs">Vigente desde {{ v.validFrom | ecDate: 'datetime' }} · {{ typeLabel(v.type) }}</p>
 
             <p class="label mt-5">Línea de tiempo</p>
             <ol class="timeline">
-              @for (h of history.value()?.versions ?? []; track h.id) {
+              @for (h of history.value()?.items ?? []; track h.id) {
                 <li [class.now]="!h.validTo || h.validTo > nowIso">
                   <span class="dot"></span>
-                  <p class="mono text-sm font-bold">{{ h.value }}</p>
+                  <p class="mono break-all text-sm font-bold">{{ h.value }}</p>
                   <p class="muted text-[11px]">{{ h.validFrom | ecDate: 'datetime' }} → {{ h.validTo ? (h.validTo | ecDate: 'datetime') : 'sin fin' }}</p>
                   @if (h.changeReason) { <p class="text-xs">«{{ h.changeReason }}»</p> }
                 </li>
+              } @empty {
+                <li class="muted text-sm">Cargando historial…</li>
               }
             </ol>
 
@@ -92,6 +99,8 @@ const GROUPS: Record<string, { label: string; icon: string }> = {
               <form class="mt-5 space-y-3 border-t pt-4" style="border-color: var(--line)" (submit)="$event.preventDefault(); publish(v)">
                 <p class="label">Publicar nueva versión</p>
                 <input class="field mono" [value]="newValue()" (input)="newValue.set($any($event.target).value)" placeholder="Nuevo valor" aria-label="Nuevo valor" />
+                @if (v.type === 'LIST') { <p class="muted text-xs">Separe los elementos con comas.</p> }
+                @if (v.type === 'BOOLEAN') { <p class="muted text-xs">Escriba true (activado) o false (desactivado).</p> }
                 <div>
                   <label class="label" for="from">Vigente desde</label>
                   <input id="from" type="datetime-local" class="field" [value]="validFrom()" (input)="validFrom.set($any($event.target).value)" />
@@ -113,6 +122,31 @@ const GROUPS: Record<string, { label: string; icon: string }> = {
     } @else {
       <app-skeleton [count]="4" [height]="110" />
     }
+
+    <ng-template #valueTpl let-v let-big="big">
+      @switch (v.type) {
+        @case ('LIST') {
+          <ul class="mt-1.5 flex flex-wrap gap-1">
+            @for (item of v.value.split(','); track $index) {
+              <li class="chip chip-blue !text-[11px]" [title]="item.trim()">{{ chipLabel(item.trim()) }}</li>
+            }
+          </ul>
+        }
+        @case ('BOOLEAN') {
+          <p class="mt-1">
+            <span class="chip" [class.chip-green]="v.value === 'true'" [class.chip-muted]="v.value !== 'true'">{{ v.value === 'true' ? 'Activado' : 'Desactivado' }}</span>
+          </p>
+        }
+        @default {
+          <p class="font-display mt-1 break-words leading-tight" [class.text-2xl]="!big" [class.text-4xl]="big">
+            {{ human(v).value }} <span class="muted font-sans text-sm">{{ human(v).unit }}</span>
+          </p>
+          @if (human(v).hint) {
+            <p class="muted text-[11px]">{{ human(v).hint }}</p>
+          }
+        }
+      }
+    </ng-template>
   `,
   styles: `
     .param { transition: transform .2s, box-shadow .2s, border-color .2s; }
@@ -135,7 +169,7 @@ export class AdminParametersPage {
   protected readonly selected = signal<ParameterVersion | null>(null);
   protected readonly history = rxResource({
     params: () => this.selected()?.key,
-    stream: ({ params }) => this.api.get<{ key: string; versions: ParameterVersion[] }>(`/parameters/${params}/history`),
+    stream: ({ params }) => this.api.get<Page<ParameterVersion>>(`/parameters/${params}/history`, { size: 50 }),
   });
   protected readonly newValue = signal('');
   protected readonly validFrom = signal(localNow());
@@ -153,12 +187,38 @@ export class AdminParametersPage {
     return [...map.entries()].map(([key, list]) => ({ key, label: GROUPS[key]?.label ?? key, icon: GROUPS[key]?.icon ?? 'sliders', items: list }));
   });
 
-  protected display(v: ParameterVersion): string {
-    return v.type === 'BOOLEAN' ? (v.value === 'true' ? 'Sí' : 'No') : v.value;
+  /** Valor legible: tamaños en MB y números con separador local; el valor exacto queda como pista. */
+  protected human(v: ParameterVersion): { value: string; unit: string; hint: string | null } {
+    const n = Number(v.value);
+    if (v.unit === 'bytes' && !Number.isNaN(n)) {
+      const mb = n / (1024 * 1024);
+      return { value: mb.toLocaleString('es-EC', { maximumFractionDigits: 1 }), unit: 'MB', hint: `${n.toLocaleString('es-EC')} bytes` };
+    }
+    if ((v.type === 'DECIMAL' || v.type === 'INTEGER') && !Number.isNaN(n)) {
+      return { value: n.toLocaleString('es-EC', { maximumFractionDigits: 4 }), unit: v.unit ?? '', hint: null };
+    }
+    return { value: v.value, unit: v.unit ?? '', hint: null };
+  }
+
+  /** Códigos internos mostrados en lenguaje claro (el código exacto queda en el título emergente). */
+  protected chipLabel(code: string): string {
+    const labels: Record<string, string> = {
+      PRESENT: 'Presente', LATE: 'Atraso', JUSTIFIED: 'Justificada', ABSENT: 'Falta',
+      LATE_FEE: 'Intereses por mora', OLDEST_PRINCIPAL: 'Cuota más antigua', 'application/pdf': 'PDF', 'image/png': 'PNG', 'image/jpeg': 'JPG',
+    };
+    return labels[code] ?? code;
+  }
+
+  protected typeLabel(type: string): string {
+    const labels: Record<string, string> = { DECIMAL: 'número decimal', INTEGER: 'número entero', BOOLEAN: 'activado / desactivado', STRING: 'texto', LIST: 'lista', DATE: 'fecha' };
+    return labels[type] ?? type;
   }
 
   protected select(v: ParameterVersion): void {
     this.selected.set(v);
+    if (window.innerWidth < 1280) {
+      setTimeout(() => document.getElementById('param-detail')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+    }
     this.newValue.set(v.value);
     this.reason.set('');
     this.validFrom.set(localNow());

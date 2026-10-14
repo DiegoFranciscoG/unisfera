@@ -372,3 +372,15 @@ h1, h2, h3, .font-display {
   .lg\:pl-\[264px\] { padding-left: 0 !important; }
   body { background: white; }
 }
+
+/* ---------------------------------------------------------------- adaptabilidad
+   Ninguna pantalla debe desbordarse a lo ancho, en ningún navegador ni tamaño. */
+body { overflow-x: clip; overflow-wrap: break-word; }
+:where(.grid) > * { min-width: 0; }
+app-icon { flex-shrink: 0; display: inline-flex; }
+img, svg, canvas, video { max-width: 100%; }
+.table td, .table th { white-space: normal; }
+input, select, textarea, button { font: inherit; max-width: 100%; }
+@supports not (overflow: clip) {
+  body { overflow-x: hidden; }
+}

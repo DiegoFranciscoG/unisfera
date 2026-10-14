@@ -1,11 +1,17 @@
 import { defineConfig, devices } from '@playwright/test';
 
-/** Flujos críticos sobre el sistema completo levantado con docker compose (ver .github/workflows/ci.yml). */
+/**
+ * Flujos críticos sobre el sistema completo levantado con docker compose (ver .github/workflows/ci.yml).
+ * Se ejecutan en los tres motores de navegador (Chromium, Firefox y WebKit/Safari) y en teléfonos.
+ * Las pruebas marcadas @unico modifican datos de forma irrepetible (matricular a un aspirante) y corren
+ * solo una vez, en Chromium de escritorio.
+ */
 export default defineConfig({
   testDir: './e2e',
   timeout: 60_000,
   expect: { timeout: 15_000 },
   fullyParallel: false,
+  workers: 1,
   retries: process.env['CI'] ? 1 : 0,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
@@ -16,7 +22,10 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   projects: [
-    { name: 'escritorio', use: { ...devices['Desktop Chrome'] } },
-    { name: 'movil', use: { ...devices['Pixel 7'] }, grep: /@movil/ },
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] }, grepInvert: /@unico/ },
+    { name: 'safari', use: { ...devices['Desktop Safari'] }, grepInvert: /@unico/ },
+    { name: 'android', use: { ...devices['Pixel 7'] }, grep: /@movil/ },
+    { name: 'iphone', use: { ...devices['iPhone 15'] }, grep: /@movil/ },
   ],
 });
