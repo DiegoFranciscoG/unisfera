@@ -2,7 +2,7 @@
 # Imagen del backend. Contexto de construcción: raíz del repositorio (los manuales viven en docs/manuales).
 
 # ---- Etapa 1: compilación con JDK
-FROM eclipse-temurin:25.0.4.1_1-jdk-alpine AS build
+FROM eclipse-temurin:27_35-jdk-alpine AS build
 WORKDIR /workspace/backend
 COPY backend/.mvn .mvn
 COPY backend/mvnw backend/pom.xml ./
@@ -13,7 +13,7 @@ COPY docs/manuales /workspace/docs/manuales
 RUN --mount=type=cache,target=/root/.m2 ./mvnw -B -q -DskipTests -Dspotless.check.skip=true package
 
 # ---- Etapa 2: ejecución con JRE, usuario sin privilegios
-FROM eclipse-temurin:25.0.4.1_1-jre-alpine
+FROM eclipse-temurin:27_35-jre-alpine
 RUN addgroup -S -g 10001 unisfera \
     && adduser -S -D -H -u 10001 -G unisfera unisfera \
     && mkdir -p /app/storage \
