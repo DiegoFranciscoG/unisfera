@@ -29,7 +29,7 @@
   "devDependencies": {
     "@angular/build": "22.2.2",
     "@angular/cli": "22.2.2",
-    "@angular/compiler-cli": "22.2.2",
+    "@angular/compiler-cli": "22.2.3",
     "@playwright/test": "1.64.0",
     "@tailwindcss/postcss": "4.3.3",
     "@types/qrcode": "1.5.6",
