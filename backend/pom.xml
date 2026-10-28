@@ -27,7 +27,7 @@
         <bouncycastle.version>1.86</bouncycastle.version>
         <jjwt.version>0.13.0</jjwt.version>
         <mapstruct.version>1.6.3</mapstruct.version>
-        <springdoc.version>3.1.1</springdoc.version>
+        <springdoc.version>3.2.0</springdoc.version>
         <poi.version>5.5.1</poi.version>
         <openpdf.version>3.0.5</openpdf.version>
         <logstash-encoder.version>9.0</logstash-encoder.version>
