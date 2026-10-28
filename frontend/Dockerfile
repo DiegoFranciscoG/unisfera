@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 # Imagen del frontend: compilación con Node LTS y servicio estático con nginx sin privilegios.
 
-FROM node:24.21.0-bookworm-slim AS build
+FROM node:26.12.1-bookworm-slim AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci --no-audit --no-fund
